@@ -1,0 +1,22 @@
+* { box-sizing: border-box; }
+:root { color-scheme: dark; }
+body {
+  margin: 0;
+  background: #111814;
+  color: #f1f5ed;
+  font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+main {
+  min-height: 100svh;
+  max-width: 1000px;
+  margin: auto;
+  padding: clamp(48px, 12vw, 128px) 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.brand { color: #b6e687; letter-spacing: .16em; font-size: 13px; font-weight: 700; }
+h1 { font-size: clamp(36px, 7vw, 72px); line-height: 1.2; letter-spacing: -.045em; margin: 32px 0 24px; }
+.description { color: #b4c0b6; font-size: clamp(16px, 2vw, 20px); line-height: 1.9; word-break: keep-all; }
+.status { margin-top: 28px; padding: 10px 16px; border: 1px solid #40543a; border-radius: 999px; color: #c1dfa9; font-size: 14px; }
