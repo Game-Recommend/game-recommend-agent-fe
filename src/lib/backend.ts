@@ -3,8 +3,13 @@ import { NextResponse } from "next/server";
 /** 백엔드가 검사하는 공유 비밀 키 헤더. 백엔드 설정과 이름이 같아야 합니다. */
 const API_KEY_HEADER = "X-API-Key";
 
-/** 백엔드 응답을 기다리는 최대 시간. Route Handler의 maxDuration보다 짧아야 합니다. */
+/**
+ * 백엔드 응답을 기다리는 최대 시간. JSON 응답은 본문까지, SSE 응답은 스트림이 열릴 때(응답 헤더)까지 적용합니다.
+ * Route Handler의 maxDuration보다 짧아야 합니다.
+ */
 const UPSTREAM_TIMEOUT_MS = 55_000;
+
+const SSE_MEDIA_TYPE = "text/event-stream";
 
 const NO_STORE = { "Cache-Control": "no-store" } as const;
 
@@ -12,6 +17,13 @@ type UpstreamRequest = {
   method: "GET" | "POST";
   /** JSON으로 직렬화해 보낼 본문 */
   body?: unknown;
+  /**
+   * true면 `Accept: text/event-stream`으로 요청합니다. 백엔드가 SSE로 응답하면 본문을 버퍼링하지 않고
+   * 그대로 흘려보내고, JSON으로 응답하면(스트림 전 오류, SSE를 지원하지 않는 백엔드) JSON 경로와 같이 처리합니다.
+   */
+  stream?: boolean;
+  /** 브라우저 요청의 signal. 브라우저가 연결을 끊으면 백엔드 호출도 중단해 파이프라인이 취소되게 합니다. */
+  signal?: AbortSignal;
 };
 
 /** 프록시가 직접 만드는 오류 응답. FastAPI와 같은 `{ detail }` 형태를 사용합니다. */
@@ -31,10 +43,23 @@ export async function proxyToBackend(path: string, init: UpstreamRequest): Promi
     return errorResponse(500, "백엔드 주소가 설정되지 않았습니다.");
   }
 
-  const headers = new Headers({ Accept: "application/json" });
+  const headers = new Headers({ Accept: init.stream ? SSE_MEDIA_TYPE : "application/json" });
   const apiKey = process.env.BACKEND_API_KEY;
   if (apiKey) headers.set(API_KEY_HEADER, apiKey);
   if (init.body !== undefined) headers.set("Content-Type", "application/json");
+
+  // 시간 제한과 브라우저 연결 끊김을 하나의 signal로 묶어 백엔드 호출을 중단합니다.
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () => controller.abort(new DOMException("백엔드 응답 시간 초과", "TimeoutError")),
+    UPSTREAM_TIMEOUT_MS,
+  );
+  const abortFromClient = () => controller.abort(init.signal?.reason);
+  init.signal?.addEventListener("abort", abortFromClient, { once: true });
+  const release = () => {
+    clearTimeout(timer);
+    init.signal?.removeEventListener("abort", abortFromClient);
+  };
 
   let upstream: Response;
   try {
@@ -42,18 +67,17 @@ export async function proxyToBackend(path: string, init: UpstreamRequest): Promi
       method: init.method,
       headers,
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+      signal: controller.signal,
       cache: "no-store",
     });
   } catch (error) {
-    const timedOut = error instanceof Error && error.name === "TimeoutError";
-    console.error(`백엔드 호출 실패 (${init.method} ${path}):`, error);
-    return timedOut
-      ? errorResponse(504, "백엔드 응답이 지연되고 있습니다.")
-      : errorResponse(502, "백엔드에 연결할 수 없습니다.");
+    release();
+    return failureResponse(error, init, path);
   }
 
   if (upstream.status === 401 || upstream.status === 403) {
+    release();
+    void upstream.body?.cancel();
     console.error(
       `백엔드 인증 실패 (${upstream.status}). BACKEND_API_KEY가 백엔드의 키와 같은지 확인하세요.`,
     );
@@ -61,7 +85,30 @@ export async function proxyToBackend(path: string, init: UpstreamRequest): Promi
   }
 
   const contentType = upstream.headers.get("content-type") ?? "";
-  const body = await upstream.text();
+
+  if (init.stream && contentType.includes(SSE_MEDIA_TYPE) && upstream.body) {
+    // 스트림은 백엔드가 닫을 때까지 이어지므로 헤더 시간 제한만 풀고, 브라우저 연결 끊김은 계속 감시합니다.
+    // 본문은 변환 없이 그대로 흘려보내 진행 이벤트가 즉시 브라우저에 닿게 합니다.
+    clearTimeout(timer);
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers: {
+        "Content-Type": `${SSE_MEDIA_TYPE}; charset=utf-8`,
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+      },
+    });
+  }
+
+  let body: string;
+  try {
+    body = await upstream.text();
+  } catch (error) {
+    release();
+    return failureResponse(error, init, path);
+  }
+  release();
+
   if (!contentType.includes("application/json")) {
     console.error(
       `백엔드가 JSON이 아닌 응답을 보냈습니다 (${upstream.status}, ${contentType || "content-type 없음"}).`,
@@ -73,4 +120,15 @@ export async function proxyToBackend(path: string, init: UpstreamRequest): Promi
     status: upstream.status,
     headers: { "Content-Type": "application/json; charset=utf-8", ...NO_STORE },
   });
+}
+
+/** 백엔드 호출이나 본문 읽기가 실패했을 때의 응답 */
+function failureResponse(error: unknown, init: UpstreamRequest, path: string) {
+  // 브라우저가 먼저 끊은 경우는 응답을 받을 곳이 없으므로 오류로 기록하지 않습니다.
+  if (init.signal?.aborted) return new Response(null, { status: 499 });
+  const timedOut = error instanceof Error && error.name === "TimeoutError";
+  console.error(`백엔드 호출 실패 (${init.method} ${path}):`, error);
+  return timedOut
+    ? errorResponse(504, "백엔드 응답이 지연되고 있습니다.")
+    : errorResponse(502, "백엔드에 연결할 수 없습니다.");
 }
