@@ -1,0 +1,211 @@
+import type { RecommendationRequester } from "@/lib/recommend-client";
+import type { RecommendationResponse, StageStatus } from "@/lib/recommendation";
+
+/**
+ * 백엔드 없이 화면을 확인할 때 쓰는 예시 응답.
+ * 원본은 game-recommend-be의 tests/integration/examples/recommend_response.json이며,
+ * 로고만 실제로 열리는 Steam CDN 주소(백엔드의 Steam CDN 폴백과 같은 형식)로 바꿨습니다.
+ * 화면을 `?mock=1`로 열면 `/api/recommend` 대신 이 데이터를 SSE 진행처럼 흘려줍니다.
+ */
+export const MOCK_RECOMMENDATION: RecommendationResponse = {
+  conditions: {
+    hardware: { cpu: null, gpu: "RTX 3060", ram_gb: 16.0, os: null, raw_text: "RTX 3060, RAM 16GB PC" },
+    genres: ["Adventure"],
+    excluded_genres: ["Horror"],
+    preferences: [],
+    players: 2,
+    connection: "online",
+    play_mode: "cooperative",
+    max_price_krw: 30000,
+    max_playtime_hours: null,
+    max_session_minutes: null,
+    platforms: ["PC"],
+    recommendation_count: 2,
+  },
+  games: [
+    {
+      game: {
+        igdb_id: 11,
+        name: "It Takes Two",
+        steam_app_id: 1426210,
+        platforms: ["PC (Microsoft Windows)"],
+        source_url: "https://www.igdb.com/games/it-takes-two",
+        summary:
+          "Embark on the craziest journey of your life in It Takes Two, a genre-bending platform adventure created purely for co-op.",
+        genres: ["Adventure", "Platform"],
+        themes: ["Action", "Comedy"],
+        playtime_hours: 12.5,
+      },
+      price: {
+        igdb_id: 11,
+        quote: { igdb_id: 11, amount_krw: 22000, source_url: "https://store.steampowered.com/app/1426210" },
+        check: { status: "met", reason: "예산 이하" },
+      },
+      hardware: {
+        igdb_id: 11,
+        requirement: {
+          os: "Windows 10",
+          cpu: "Intel Core i5-4460",
+          gpu: "NVIDIA GeForce GTX 660",
+          ram_gb: 8.0,
+          raw_text:
+            "OS: Windows 10, Processor: Intel Core i5-4460, Graphics: NVIDIA GeForce GTX 660, Memory: 8 GB RAM",
+          source_url: "https://store.steampowered.com/app/1426210",
+        },
+        recommended: null,
+        check: {
+          status: "met",
+          reason: "GPU RTX 3060 vs 최소 'NVIDIA GeForce GTX 660' → 충족 (2세대 이상 상위); RAM 16GB ≥ 8GB",
+        },
+      },
+      review: {
+        igdb_id: 11,
+        summary:
+          "협동 전용 설계와 다양한 미니게임 구성을 호평하는 리뷰가 많고, 혼자서는 플레이할 수 없다는 점이 주요 단점으로 언급됩니다.",
+        source_urls: ["https://store.steampowered.com/appreviews/1426210"],
+      },
+      media: {
+        igdb_id: 11,
+        logo_url: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1426210/logo.png",
+        logo_source: "steam",
+        hero_url: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1426210/library_hero.jpg",
+        hero_width: 1920,
+        hero_height: 620,
+        hero_source: "steam",
+        trailer_youtube_id: "ohClxMmNLQQ",
+        trailer_source: "igdb",
+      },
+    },
+    {
+      game: {
+        igdb_id: 12,
+        name: "A Way Out",
+        steam_app_id: 1222700,
+        platforms: ["PC (Microsoft Windows)"],
+        source_url: "https://www.igdb.com/games/a-way-out",
+        summary:
+          "A Way Out is an exclusively co-op adventure where you play the role of one of two prisoners making their daring escape.",
+        genres: ["Adventure", "Shooter"],
+        themes: ["Action", "Drama"],
+        playtime_hours: 6.0,
+      },
+      price: {
+        igdb_id: 12,
+        quote: { igdb_id: 12, amount_krw: 15000, source_url: "https://store.steampowered.com/app/1222700" },
+        check: { status: "met", reason: "예산 이하" },
+      },
+      hardware: {
+        igdb_id: 12,
+        requirement: {
+          os: "Windows 10",
+          cpu: "Intel Core i5-4460",
+          gpu: "NVIDIA GeForce GTX 650Ti",
+          ram_gb: 8.0,
+          raw_text:
+            "OS: Windows 10, Processor: Intel Core i5-4460, Graphics: NVIDIA GeForce GTX 650Ti, Memory: 8 GB RAM",
+          source_url: "https://store.steampowered.com/app/1222700",
+        },
+        recommended: null,
+        check: {
+          status: "met",
+          reason: "GPU RTX 3060 vs 최소 'NVIDIA GeForce GTX 650Ti' → 충족 (2세대 이상 상위); RAM 16GB ≥ 8GB",
+        },
+      },
+      review: {
+        igdb_id: 12,
+        summary:
+          "탈옥 스토리와 분할 화면 협동 연출을 높게 평가하며, 플레이 시간이 짧다는 의견과 친구 패스로 한 명만 구매해도 된다는 점이 자주 언급됩니다.",
+        source_urls: ["https://store.steampowered.com/appreviews/1222700"],
+      },
+      media: {
+        igdb_id: 12,
+        logo_url: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1222700/logo.png",
+        logo_source: "steam",
+        hero_url: "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1222700/library_hero.jpg",
+        hero_width: 1920,
+        hero_height: 620,
+        hero_source: "steam",
+        trailer_youtube_id: "3Ub3NZbS3y8",
+        trailer_source: "igdb",
+      },
+    },
+  ],
+  excluded_games: [
+    {
+      game: {
+        igdb_id: 13,
+        name: "Sea of Thieves",
+        steam_app_id: 1172620,
+        platforms: ["PC (Microsoft Windows)"],
+        source_url: "https://www.igdb.com/games/sea-of-thieves",
+        summary: "A shared-world adventure game on the high seas.",
+        genres: ["Adventure"],
+        themes: ["Open world"],
+        playtime_hours: null,
+      },
+      price: {
+        igdb_id: 13,
+        quote: { igdb_id: 13, amount_krw: 43000, source_url: "https://store.steampowered.com/app/1172620" },
+        check: { status: "unmet", reason: "예산 초과" },
+      },
+      hardware: {
+        igdb_id: 13,
+        requirement: null,
+        recommended: null,
+        check: { status: "met", reason: "GPU RTX 3060 vs 최소 'GTX 650' → 충족" },
+      },
+      review: null,
+      media: null,
+    },
+  ],
+  warnings: [],
+  answer:
+    "친구 한 명과 온라인 협동으로 즐길 수 있고 공포 요소가 없으며 3만 원 이하인 어드벤처 게임을 2개 찾았습니다. It Takes Two는 처음부터 2인 협동 전용으로 설계된 플랫폼 어드벤처로, 22,000원에 예산 안에 들어오고 RTX 3060·16GB 사양이면 최소 요구 사양을 넉넉히 넘습니다. A Way Out은 두 명의 죄수가 함께 탈옥하는 이야기 중심 협동 게임으로, 15,000원이며 완료까지 약 6시간이라 짧게 끝내기 좋습니다. 두 게임 모두 온라인 협동을 지원하고 공포 장르가 아닙니다.",
+};
+
+/** 백엔드 SSE와 같은 순서의 진행 이벤트. 가격·하드웨어, 리뷰·미디어는 병렬이라 섞여 온다. */
+const MOCK_STAGES: ReadonlyArray<readonly [string, StageStatus, string | null]> = [
+  ["질문 분해", "started", null],
+  ["질문 분해", "completed", null],
+  ["게임 검색", "started", null],
+  ["게임 검색", "completed", "후보 3개"],
+  ["가격", "started", null],
+  ["하드웨어", "started", null],
+  ["가격", "completed", null],
+  ["하드웨어", "completed", null],
+  ["조건 판정", "completed", "통과 2개 중 2개 선택, 제외 1개"],
+  ["리뷰 요약", "started", null],
+  ["미디어", "started", null],
+  ["미디어", "completed", null],
+  ["리뷰 요약", "completed", null],
+  ["최종 답변 생성", "started", null],
+  ["최종 답변 생성", "completed", null],
+];
+
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(signal?.reason ?? new DOMException("요청이 중단되었습니다.", "AbortError"));
+    if (signal?.aborted) {
+      abort();
+      return;
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    function onAbort() {
+      clearTimeout(timer);
+      abort();
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+/** `requestRecommendation`과 같은 모양으로 예시 응답을 돌려줍니다. 단계 이벤트를 조금씩 지연해 진행 표시를 확인할 수 있습니다. */
+export const mockRecommendation: RecommendationRequester = async (question, { onStage, signal } = {}) => {
+  for (const [stage, status, detail] of MOCK_STAGES) {
+    await sleep(status === "completed" && stage === "게임 검색" ? 900 : 350, signal);
+    onStage?.({ event: "stage", stage, status, detail });
+  }
+  return structuredClone(MOCK_RECOMMENDATION);
+};
