@@ -21,7 +21,7 @@ const EXAMPLE_QUESTIONS = [
   {
     label: "협동 · 3만 원 이하 · RTX 3060",
     question:
-      "RTX 3060, RAM 16GB PC를 사용하고 있어. 친구 한 명과 온라인으로 같이 할 수 있고, 공포 게임은 싫어. 3만 원 이하이면서 Steam 평가가 좋은 게임 3개만 추천해줘.",
+      "RTX 3060, RAM 16GB PC를 사용하고 있어. 친구 한 명과 온라인으로 같이 할 수 있고, 공포 게임은 싫어. 3만 원 이하이면서 Steam 평가가 좋은 게임 5개만 추천해줘.",
   },
   {
     label: "2만 원 이하 스토리 RPG",
@@ -141,7 +141,7 @@ export function RecommendScreen() {
               onKeyDown={onKeyDown}
               maxLength={MAX_QUESTION_LENGTH}
               rows={2}
-              placeholder="예: 3만 원 이하로 친구와 온라인 협동할 게임 3개 추천해줘"
+              placeholder="예: 3만 원 이하로 친구와 온라인 협동할 게임 5개 추천해줘"
               autoComplete="off"
             />
             <div className={styles.actions}>
