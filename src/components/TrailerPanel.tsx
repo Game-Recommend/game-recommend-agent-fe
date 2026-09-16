@@ -25,7 +25,6 @@ export function TrailerPanel({ game }: { game: EvaluatedGame | null }) {
           {game ? "이 게임은 트레일러가 없어요." : "게임을 선택하면 트레일러가 재생돼요."}
         </div>
       )}
-      {game && <p className={styles.trailerCaption}>{game.game.name}</p>}
     </aside>
   );
 }

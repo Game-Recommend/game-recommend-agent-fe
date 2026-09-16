@@ -141,16 +141,30 @@ export type ErrorEvent = { event: "error"; detail: string };
 export type PipelineEvent = StageEvent | ResultEvent | ErrorEvent;
 
 /**
- * 백엔드가 실행하는 순서대로의 단계 이름. 진행 표시의 기본 순서입니다.
- * 가격·하드웨어, 리뷰 요약·미디어는 병렬이라 이벤트 순서가 섞일 수 있습니다.
+ * 진행 표시가 고정으로 그리는 뼈대. 백엔드가 질문 하나마다 반드시 거치는 단계만 둡니다.
+ * 에이전트 추론은 도구를 고르고 부르는 루프 전체를 감싸므로 그 안의 도구가 도는 동안 계속 진행 중입니다.
+ * 조건 판정은 started 없이 completed만 오고, 미디어는 추론이 끝난 뒤 후처리로 돕니다.
  */
-export const PIPELINE_STAGES: readonly string[] = [
-  "질문 분해",
+export const PIPELINE_FLOW: readonly (readonly string[])[] = [
+  ["질문 분해"],
+  ["에이전트 추론"],
+  ["조건 판정"],
+  ["미디어"],
+];
+
+/** 도구를 매달 칸. 이 이름의 칸 밑으로만 창살을 내린다. */
+export const AGENT_STAGE = "에이전트 추론";
+
+/**
+ * 에이전트 루프 안에서 LLM이 골라 부르는 도구 단계. 시스템 프롬프트가 정한 순서대로 두었지만
+ * 호출 여부도 횟수도 질문마다 다릅니다(리뷰 점수는 Steam 평가가 선별 기준일 때만 돕니다).
+ * 그래서 파이프라인 칸으로 잇지 않고 전부 늘어놓은 뒤 실제로 고른 것만 밝힙니다.
+ * 끝까지 옅게 남은 이름은 이번 질문에 에이전트가 고르지 않았다는 뜻입니다.
+ */
+export const AGENT_TOOL_STAGES: readonly string[] = [
   "게임 검색",
   "가격",
   "하드웨어",
-  "조건 판정",
+  "리뷰 점수",
   "리뷰 요약",
-  "미디어",
-  "최종 답변 생성",
 ];

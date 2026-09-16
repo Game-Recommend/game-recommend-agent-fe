@@ -1,0 +1,462 @@
+/* 디자인 시스템 견본 페이지. 이 페이지도 토큰과 공용 컴포넌트만으로 만든다. */
+.page {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-12) var(--page-gutter) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.overline {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-accent);
+  font: var(--text-overline);
+  letter-spacing: var(--tracking-overline);
+}
+.title {
+  margin: 0;
+  font: var(--text-display);
+  letter-spacing: var(--tracking-display);
+}
+.lead {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--color-text-secondary);
+  font: var(--text-body-lg);
+}
+.lead code,
+.sectionLead code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--color-text);
+}
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.navLink {
+  padding: var(--space-1-5) var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  font: var(--text-caption);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+.navLink:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  scroll-margin-top: var(--space-6);
+}
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.sectionTitle {
+  margin: 0;
+  font: var(--text-headline);
+  letter-spacing: var(--tracking-title);
+}
+.sectionLead {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--color-text-secondary);
+  font: var(--text-body-sm);
+}
+
+/* 메인 컬러 */
+.brandGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+@media (min-width: 760px) {
+  .brandGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.brandCard {
+  overflow: hidden;
+}
+.brandSwatch {
+  aspect-ratio: 16 / 9;
+  border-bottom: 1px solid var(--color-border);
+}
+.brandBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+.brandName {
+  margin: 0;
+  font: var(--text-title);
+  letter-spacing: var(--tracking-title);
+}
+.brandRole {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-secondary);
+  font: var(--text-body-sm);
+}
+.ratio {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.ratioBar {
+  display: flex;
+  height: 20px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+}
+.ratioLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  color: var(--color-text-secondary);
+  font: var(--text-caption);
+}
+.ratioTitle {
+  color: var(--color-text-muted);
+}
+.ratioItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-5);
+}
+.ratioDot {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+}
+
+/* 색상 토큰 */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.groupTitle {
+  margin: 0;
+  font: var(--text-subtitle);
+}
+.groupLead {
+  margin: calc(var(--space-2) * -1) 0 0;
+  color: var(--color-text-muted);
+  font: var(--text-caption);
+}
+.tokenGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+.token {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.tokenSampleFill,
+.tokenSampleBorder,
+.tokenSampleText {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.tokenSampleFill {
+  border: 1px solid var(--color-border);
+}
+.tokenSampleBorder {
+  border: 2px solid;
+  background: var(--color-bg);
+}
+.tokenSampleText {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  font: var(--text-subtitle);
+  text-align: center;
+}
+.tokenInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+  min-width: 0;
+}
+.tokenName {
+  font: var(--text-code);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+.tokenValue {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1-5);
+  color: var(--color-text-muted);
+  font: var(--text-caption);
+  font-variant-numeric: tabular-nums;
+}
+.tokenNote {
+  color: var(--color-text-secondary);
+  font: var(--text-caption);
+}
+.contrast {
+  padding: 0 var(--space-1-5);
+  border-radius: var(--radius-full);
+  background: var(--color-success-subtle);
+  color: var(--color-success-text);
+  font: var(--text-badge);
+}
+.contrast[data-level="AA"] {
+  background: var(--color-neutral-subtle);
+  color: var(--color-neutral-text);
+}
+.contrast[data-level="낮음"] {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger-text);
+}
+.palette {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.paletteTitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font: var(--text-overline);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+.paletteGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: var(--space-3);
+}
+
+/* 타이포그래피 */
+.typeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.typeRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: baseline;
+  padding: var(--space-4) var(--space-6);
+}
+.typeRow + .typeRow {
+  border-top: 1px solid var(--color-border);
+}
+.typeMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+}
+.typeSample {
+  margin: 0;
+}
+
+/* 간격·모서리·표면 */
+.layoutGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+.layoutGrid > * {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.spaceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.spaceRow {
+  display: grid;
+  grid-template-columns: 112px 44px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: center;
+}
+.spaceBar {
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+.radiusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-4);
+}
+.radiusItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.radiusBox {
+  height: 64px;
+  margin-bottom: var(--space-1);
+  border: 1px solid var(--color-border-accent);
+  background: var(--color-primary-subtle);
+}
+/* 흐린 게임 배너를 흉내 낸 장식 배경. 외부 이미지를 대신하므로 토큰 규칙의 예외다 */
+.effectStage {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at 15% 20%, #3f6fd8 0, transparent 45%),
+    radial-gradient(circle at 85% 80%, #d8742f 0, transparent 50%),
+    radial-gradient(circle at 60% 10%, #9a4fd1 0, transparent 40%),
+    var(--color-surface-raised);
+}
+.effectCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* 컴포넌트 */
+.componentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+.componentBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+.componentHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font: var(--text-body-sm);
+}
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+}
+.fieldLabel {
+  color: var(--color-text-muted);
+  font: var(--text-caption);
+}
+.panelGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  font: var(--text-body-sm);
+}
+
+/* 사용 규칙 */
+.rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+.rule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.ruleCases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+.ruleCase {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.ruleExample {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+}
+.swatchPill {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font: var(--text-label);
+}
+.ruleText {
+  margin: 0;
+  font: var(--text-body-sm);
+}
+.ruleLink {
+  color: var(--color-text-accent);
+  text-underline-offset: 3px;
+}
+.ruleCode {
+  font: var(--text-code);
+  color: var(--color-text);
+}
+
+@media (max-width: 600px) {
+  .typeRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    padding: var(--space-4);
+  }
+}

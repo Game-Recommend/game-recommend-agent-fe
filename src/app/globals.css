@@ -1,8 +1,12 @@
-* {
+/* 전역 기본 스타일. 값은 모두 src/styles/tokens.css의 토큰을 쓴다. */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
-:root {
-  color-scheme: dark;
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 html,
 body {
@@ -10,18 +14,34 @@ body {
 }
 body {
   margin: 0;
-  background: #0d120f;
-  color: #f1f5ed;
-  font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: var(--text-body);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* 한국어는 어절 단위로 줄을 바꾸고, 긴 URL 같은 한 덩어리는 넘치지 않게 끊는다 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 button,
+input,
+select,
 textarea {
   font: inherit;
+  color: inherit;
 }
 a {
   color: inherit;
 }
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+::selection {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
 /* 화면에서는 숨기고 스크린 리더에만 읽히는 텍스트 */
 .visually-hidden {
   position: absolute;
@@ -30,4 +50,16 @@ a {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* 움직임을 줄이도록 설정한 사용자에게는 애니메이션·전환을 사실상 끈다 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

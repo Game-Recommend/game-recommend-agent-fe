@@ -1,0 +1,178 @@
+/*
+ * Game Recommend 디자인 토큰
+ *
+ * 메인 컬러는 세 가지다. 옅은 검정은 배경, 선명한 연두는 강조, 흰색은 글씨.
+ *
+ * 1. 원시 토큰(--gray-*, --lime-*, --red-*, --amber-*)은 팔레트 자체다. 컴포넌트에서 직접 쓰지 않는다.
+ * 2. 의미 토큰(--color-*, --text-*, --space-* 등)은 역할을 나타낸다. 컴포넌트는 이것만 쓴다.
+ *
+ * 반투명 변형은 color-mix로 원시 토큰에서 만들므로 원시 값 하나만 바꾸면 함께 바뀐다.
+ * 사용 규칙은 docs/DESIGN_SYSTEM.md, 화면 견본은 /design-system에 있다.
+ */
+:root {
+  color-scheme: dark;
+
+  /* ── 원시 팔레트: 옅은 검정 → 흰색. oklch 색상각 145, 채도 0.005로 연두와 어울리게 아주 약간 기울였다 ── */
+  --gray-950: #0f110f;
+  --gray-900: #1a1c1a;
+  --gray-850: #212321;
+  --gray-800: #2a2c2a;
+  --gray-750: #343634;
+  --gray-700: #434643;
+  --gray-600: #5f615f;
+  --gray-500: #7e817e;
+  --gray-400: #a3a5a3;
+  --gray-300: #c5c8c5;
+  --gray-200: #dfe2df;
+  --gray-100: #f1f4f1;
+  --white: #ffffff;
+  --black: #000000;
+
+  /* ── 원시 팔레트: 연두. oklch 색상각 128 ── */
+  --lime-200: #e4ffc5;
+  --lime-300: #d0fd95;
+  --lime-400: #c5fe71;
+  --lime-500: #baf956; /* 브랜드 기준색 oklch(0.91 0.20 128) */
+  --lime-600: #a7e53d;
+  --lime-700: #85b72e;
+  --lime-800: #5b7f1d;
+  --lime-900: #2e420d;
+
+  /* ── 원시 팔레트: 상태 ── */
+  --red-300: #fdb1aa;
+  --red-500: #fa6863;
+  --amber-300: #fcd583;
+  --amber-500: #fdba2f;
+
+  /* ── 배경·표면 ── */
+  --color-bg: var(--gray-900);
+  --color-surface: var(--gray-850);
+  --color-surface-raised: var(--gray-800);
+  /* 흐린 배너 위에 올리는 반투명 면. 배너가 밝아도 보조 글씨가 4.5:1을 넘는 불투명도다 */
+  --color-surface-glass: color-mix(in srgb, var(--gray-850) 80%, transparent);
+  --color-surface-glass-raised: color-mix(in srgb, var(--gray-800) 88%, transparent);
+  --color-surface-sunken: color-mix(in srgb, var(--black) 28%, transparent);
+  --color-media: var(--black);
+
+  /* ── 글씨 ── */
+  --color-text: var(--white); /* 본문·제목 */
+  --color-text-secondary: var(--gray-300); /* 보조 설명 */
+  --color-text-muted: var(--gray-400); /* 라벨·메타·플레이스홀더 */
+  --color-text-disabled: var(--gray-500); /* 비활성. 대비 기준 예외 */
+  --color-text-accent: var(--lime-500); /* 링크·브랜드 표기 같은 짧은 강조 */
+
+  /* ── 선 ── */
+  --color-border: color-mix(in srgb, var(--white) 10%, transparent); /* 패널·구분선 */
+  --color-border-strong: color-mix(in srgb, var(--white) 22%, transparent); /* 칩·보조 버튼 */
+  --color-border-control: color-mix(in srgb, var(--white) 38%, transparent); /* 입력 경계. 배경 대비 3:1 이상 */
+  --color-border-control-hover: color-mix(in srgb, var(--white) 56%, transparent);
+  --color-border-accent: color-mix(in srgb, var(--lime-500) 50%, transparent); /* 선택 가능한 면의 호버 */
+
+  /* ── 강조: 연두 ── */
+  --color-primary: var(--lime-500);
+  --color-primary-hover: var(--lime-400);
+  --color-primary-active: var(--lime-600);
+  --color-primary-subtle: color-mix(in srgb, var(--lime-500) 16%, transparent);
+  --color-primary-ring: color-mix(in srgb, var(--lime-500) 40%, transparent);
+  --color-on-primary: var(--gray-950); /* 연두 위 글씨. 흰색은 1.3:1이라 쓰지 않는다 */
+
+  /* ── 상태 ── */
+  --color-success: var(--lime-500);
+  --color-success-text: var(--lime-300);
+  --color-success-subtle: color-mix(in srgb, var(--lime-500) 16%, transparent);
+  --color-danger: var(--red-500);
+  --color-danger-text: var(--red-300);
+  --color-danger-subtle: color-mix(in srgb, var(--red-500) 18%, transparent);
+  --color-danger-border: color-mix(in srgb, var(--red-500) 45%, transparent);
+  --color-warning: var(--amber-500);
+  --color-warning-text: var(--amber-300);
+  --color-warning-subtle: color-mix(in srgb, var(--amber-500) 16%, transparent);
+  --color-warning-border: color-mix(in srgb, var(--amber-500) 40%, transparent);
+  --color-neutral-text: var(--gray-200);
+  --color-neutral-subtle: color-mix(in srgb, var(--white) 10%, transparent);
+
+  /* ── 글꼴 ── */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* 역할별 글꼴. `font: var(--text-body)`처럼 font 단축 속성으로 쓴다 (굵기 크기/행간 글꼴) */
+  --text-display: var(--font-weight-extrabold) clamp(1.75rem, 1.2rem + 2.2vw, 2.5rem) / 1.2 var(--font-sans); /* 28~40px 페이지 제목 */
+  --text-headline: var(--font-weight-bold) 1.5rem / 1.3 var(--font-sans); /* 24px 섹션 제목 */
+  --text-title: var(--font-weight-bold) 1.25rem / 1.35 var(--font-sans); /* 20px 카드 제목 */
+  --text-subtitle: var(--font-weight-semibold) 1rem / 1.4 var(--font-sans); /* 16px 소제목 */
+  --text-body-lg: var(--font-weight-regular) clamp(1rem, 0.95rem + 0.25vw, 1.125rem) / 1.8 var(--font-sans); /* 16~18px 요약문 */
+  --text-body: var(--font-weight-regular) 1rem / 1.6 var(--font-sans); /* 16px 기본 본문·입력 */
+  --text-body-sm: var(--font-weight-regular) 0.875rem / 1.6 var(--font-sans); /* 14px 카드 정보 */
+  --text-label: var(--font-weight-bold) 0.9375rem / 1.2 var(--font-sans); /* 15px 버튼 */
+  --text-label-sm: var(--font-weight-bold) 0.8125rem / 1.2 var(--font-sans); /* 13px 작은 버튼 */
+  --text-caption: var(--font-weight-regular) 0.8125rem / 1.5 var(--font-sans); /* 13px 메타·칩 */
+  --text-overline: var(--font-weight-bold) 0.8125rem / 1.2 var(--font-sans); /* 13px 브랜드 표기. 대문자와 함께 */
+  --text-badge: var(--font-weight-bold) 0.75rem / 1.5 var(--font-sans); /* 12px 배지 */
+  --text-code: var(--font-weight-regular) 0.8125rem / 1.5 var(--font-mono); /* 13px 코드·토큰 이름 */
+  --tracking-display: -0.03em;
+  --tracking-title: -0.02em;
+  --tracking-overline: 0.16em;
+
+  /* ── 간격. 4px 단위 ── */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── 모서리 ── */
+  --radius-sm: 8px;
+  --radius-md: 12px; /* 버튼·입력·미디어 */
+  --radius-lg: 16px; /* 패널·카드 */
+  --radius-full: 999px; /* 칩·배지·점 */
+
+  /* ── 그림자·흐림 ── */
+  --shadow-glow: 0 0 0 1px var(--color-primary-ring), 0 0 32px -8px var(--color-primary-ring);
+  --shadow-raised: 0 16px 40px -16px color-mix(in srgb, var(--black) 70%, transparent);
+  --filter-drop-shadow: drop-shadow(0 4px 12px color-mix(in srgb, var(--black) 60%, transparent));
+  /* 배경 이미지 위에 바로 놓이는 글자용. 패널 안 글자에는 쓰지 않는다 */
+  --shadow-text: 0 1px 2px color-mix(in srgb, var(--black) 70%, transparent),
+    0 2px 18px color-mix(in srgb, var(--black) 85%, transparent);
+  --blur-backdrop: 6px; /* 배경 배너. 내용이 읽히는 정도로만 약하게 */
+  --blur-sm: 10px;
+  --blur-md: 16px;
+
+  /* ── 움직임 ── */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 800ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ── 쌓임 순서 ── */
+  --z-backdrop: 0;
+  --z-content: 1;
+  --z-sticky: 10;
+
+  /* ── 크기·배치 ── */
+  --container-max: 1280px;
+  --page-gutter: var(--space-6);
+  --control-height-sm: 36px;
+  --control-height-md: 44px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
+
+/* 중단점은 CSS 변수를 미디어 쿼리에 쓸 수 없어 숫자로 둔다. sm 600px, md 900px */
+@media (max-width: 600px) {
+  :root {
+    --page-gutter: var(--space-4);
+  }
+}

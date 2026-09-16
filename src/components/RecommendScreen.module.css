@@ -1,10 +1,16 @@
-/* 배경: 선택한 게임의 배너를 흐리게 깔고 위에 어두운 그라데이션을 얹는다 */
+/*
+ * 추천 화면의 배치 스타일.
+ * 색·글꼴·간격·모서리는 토큰(src/styles/tokens.css)만 쓰고, 버튼·칩·패널·배지·입력의 모양은
+ * src/components/ui가 맡는다. 여기서는 그 컴포넌트가 정하지 않는 배치 속성만 더한다.
+ */
+
+/* 배경: 선택한 게임의 배너를 아주 약하게만 흐리게 해서 화면에 깐다 */
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: var(--z-backdrop);
   overflow: hidden;
-  background: #0d120f;
+  background: var(--color-bg);
 }
 .backdropImage {
   position: absolute;
@@ -13,103 +19,67 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  filter: blur(28px) saturate(1.15) brightness(0.7);
-  transform: scale(1.12);
-  animation: fade-in 0.8s ease both;
-}
-.backdropShade {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(13, 18, 15, 0.5) 0%,
-    rgba(13, 18, 15, 0.28) 40%,
-    rgba(13, 18, 15, 0.84) 100%
-  );
+  /* 확대는 흐림 때문에 가장자리가 비치는 것을 덮는 용도다 */
+  filter: blur(var(--blur-backdrop));
+  transform: scale(1.03);
+  animation: fade-in var(--duration-slow) ease both;
 }
 
 .page {
+  /* 질문 입력란의 최소 높이. 최종 답변의 글 영역을 이 값의 두 배로 고정하는 데도 쓴다 */
+  --question-height: 60px;
   position: relative;
-  z-index: 1;
-  max-width: 1280px;
+  z-index: var(--z-content);
+  /* 한 화면에 모두 담는다. 남는 세로 공간은 아래의 카드·영상 칸이 전부 가져간다 */
+  height: 100dvh;
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 32px 24px 64px;
+  padding: var(--space-6) var(--page-gutter);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 /* 상단: 브랜드·제목·질문 입력 */
 .header {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-3);
 }
 .brand {
   margin: 0;
-  color: #b6e687;
-  letter-spacing: 0.16em;
-  font-size: 13px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-accent);
+  font: var(--text-overline);
+  letter-spacing: var(--tracking-overline);
+  text-shadow: var(--shadow-text);
+}
+/* 마크는 글자와 달리 text-shadow가 듣지 않아 같은 목적의 그림자를 따로 준다 */
+.brandMark {
+  filter: var(--filter-drop-shadow);
 }
 .title {
   margin: 0;
-  font-size: clamp(24px, 4vw, 36px);
-  letter-spacing: -0.03em;
-  line-height: 1.25;
+  font: var(--text-display);
+  letter-spacing: var(--tracking-display);
+  text-shadow: var(--shadow-text);
 }
 .form {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: stretch;
 }
 .input {
   flex: 1;
   min-width: 0;
-  min-height: 60px;
-  resize: vertical;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(10, 14, 12, 0.62);
-  color: inherit;
-  font: inherit;
-  line-height: 1.5;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.input::placeholder {
-  color: #7f8c82;
-}
-.input:focus-visible {
-  outline: 2px solid #b6e687;
-  outline-offset: 1px;
+  min-height: var(--question-height);
 }
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-.button {
-  min-height: 44px;
-  padding: 0 20px;
-  border-radius: 14px;
-  border: 1px solid transparent;
-  background: #b6e687;
-  color: #111814;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.buttonGhost {
-  background: rgba(10, 14, 12, 0.5);
-  color: #f1f5ed;
-  border-color: rgba(255, 255, 255, 0.2);
+  gap: var(--space-2);
 }
 .examples {
   list-style: none;
@@ -117,344 +87,482 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-}
-.chip {
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(10, 14, 12, 0.45);
-  color: #c9d3cb;
-  font-size: 13px;
-  cursor: pointer;
-}
-.chip:hover:not(:disabled),
-.chip:focus-visible {
-  border-color: #b6e687;
-  color: #f1f5ed;
-}
-.chip:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-/* 반투명 유리 패널. 흐린 배너 위에서 글이 읽히게 한다 */
-.panel {
-  background: rgba(12, 18, 14, 0.68);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  gap: var(--space-2);
 }
 
 /* 진행 표시 */
-.progress {
-  padding: 18px 22px;
-}
 .progressTitle {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 15px;
+  gap: var(--space-3);
 }
-.spinner {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid rgba(182, 230, 135, 0.25);
-  border-top-color: #b6e687;
-  animation: spin 0.9s linear infinite;
+/* 파이프라인: 점 없이 선과 글씨로만 그린다. 병렬로 도는 단계는 두 갈래로 접고 앞뒤 칸과 선으로 잇는다 */
+.pipelineScroll {
+  margin-top: var(--space-3);
+  /* 좁은 화면에서 줄을 바꾸면 선 모양이 끊기므로 가로로 민다 */
+  overflow-x: auto;
 }
-.stages {
+.pipeline {
+  /* 한 갈래의 높이. 두 갈래 칸은 이 두 배가 되고, 그때 선의 25%·75%가 각 갈래의 한가운데다 */
+  --stage-row: 32px;
+  /* 칸 사이를 넓게 벌려야 에이전트 추론이 왼쪽 끝에서 충분히 떨어진다.
+     그래야 그 밑에 가운데를 맞춘 창살이 패널 밖으로 넘치지 않는다 */
+  --stage-link: 132px;
+  --stage-line: 1px;
+  /* 에이전트 칸 이름에서 가로 막대까지 내려가는 줄기와, 막대에서 도구로 내려가는 창살 */
+  --tool-trunk: 12px;
+  --tool-prong: 12px;
+  /* 띄워 놓은 창살과 도구 이름이 들어갈 자리 */
+  --tool-drop: 68px;
   list-style: none;
-  margin: 14px 0 0;
+  margin: 0;
+  padding: 0 0 var(--tool-drop);
+  display: flex;
+  /* 에이전트 칸은 창살·도구만큼 아래로 길어지므로 칸끼리는 위를 맞춘다 */
+  align-items: flex-start;
+  min-width: max-content;
+}
+.step {
+  display: flex;
+  align-items: flex-start;
+}
+.branches {
+  list-style: none;
+  margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
+  flex-direction: column;
 }
 .stage {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #7f8c82;
+  gap: var(--space-2);
+  /* 두 갈래의 높이가 같아야 선이 정확히 갈래의 가운데에 붙는다 */
+  min-height: var(--stage-row);
+  /* 글씨가 선에 닿지 않게 띄운다 */
+  padding-inline: var(--space-2);
+  font: var(--text-body-sm);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transition: color var(--duration-base) ease;
 }
-.stage[data-status="started"] {
-  color: #f1f5ed;
+/* 양 끝은 선이 없으니 들여쓰기처럼 보이지 않게 붙인다 */
+.step:first-child .stage {
+  padding-left: 0;
 }
+.step:last-child .stage {
+  padding-right: 0;
+}
+/* 지나온 칸도 같은 연두로 두되 옅게 써서, 밝은 한 칸이 지금 도는 곳으로 읽히게 한다 */
 .stage[data-status="completed"] {
-  color: #c9f3a3;
+  color: color-mix(in srgb, var(--color-primary) 62%, transparent);
+}
+/* 지금 도는 단계만 연두로 밝힌다 */
+.stage[data-status="started"] {
+  color: var(--color-primary);
 }
 .stage[data-status="failed"] {
-  color: #ffb3b3;
-}
-.stageIcon {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.35;
-}
-.stage[data-status="started"] .stageIcon {
-  opacity: 1;
-  animation: pulse 1s ease-in-out infinite;
-}
-.stage[data-status="completed"] .stageIcon,
-.stage[data-status="failed"] .stageIcon {
-  opacity: 1;
+  color: var(--color-danger-text);
 }
 .stageDetail {
-  font-size: 12px;
-  color: #b4c0b6;
+  font: var(--text-caption);
+  color: color-mix(in srgb, currentColor 80%, transparent);
 }
 
-.error {
+/* 칸을 잇는 선. 모양은 currentColor 그라디언트로 그리므로 상태는 색만 바꾼다 */
+.link {
+  flex: none;
+  /* 칸이 아래로 길어져도 선은 이름 줄 높이에 머문다 */
+  height: var(--stage-row);
+  width: var(--stage-link);
+  flex: none;
+  color: var(--color-border);
+  background-repeat: no-repeat;
+  transition: color var(--duration-base) ease;
+}
+.link[data-status="completed"] {
+  color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+.link[data-status="started"] {
+  color: var(--color-primary);
+  animation: line-pulse 1.6s ease-in-out infinite;
+}
+.link[data-status="failed"] {
+  color: var(--color-danger-border);
+}
+/* 한 갈래 → 한 갈래: 가운데 가로선 하나 */
+.linkLine {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% var(--stage-line);
+  background-position: center;
+}
+/* 다음 칸이 두 갈래: 가운데로 들어와 세로선을 타고 위아래로 벌어진다 */
+.linkFork {
+  /* 두 갈래 칸은 선이 칸 높이를 그대로 받아야 25%·75% 계산이 맞는다 */
+  align-self: stretch;
+  height: auto;
+  background-image:
+    linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor),
+    linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor);
+  background-size: 50% var(--stage-line), var(--stage-line) 50%, 50% var(--stage-line), 50% var(--stage-line);
+  background-position: left center, center, right 25%, right 75%;
+}
+/* 두 갈래 → 한 갈래: 세로선으로 모여 가운데로 빠져나간다 */
+.linkMerge {
+  align-self: stretch;
+  height: auto;
+  background-image:
+    linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor),
+    linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor);
+  background-size: 50% var(--stage-line), 50% var(--stage-line), var(--stage-line) 50%, 50% var(--stage-line);
+  background-position: left 25%, left 75%, center, right center;
+}
+
+/* 에이전트 추론 칸의 이름. 창살은 이 이름에만 기준을 걸어서, 뒤에 detail이 붙어 칸이
+   넓어져도 가운데가 밀리지 않는다. 창살 자체는 이름보다 훨씬 넓어서 흐름에 두면 뒤 칸을
+   그만큼 밀어내므로 띄워서 매단다 */
+.agentName {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+/* 에이전트가 고를 수 있는 도구를 모두 매단다. 순서도 호출 여부도 질문마다 달라 서로 잇지는 않는다.
+   실제로 고른 도구만 연두로 밝히므로, 끝까지 옅게 남은 이름이 "이번엔 안 골랐다"는 뜻이 된다 */
+.tools {
+  list-style: none;
   margin: 0;
-  padding: 16px 20px;
-  border-color: rgba(255, 120, 120, 0.4);
-  color: #ffd0d0;
+  padding: var(--tool-prong) 0 0;
+  /* 뒤 칸을 밀지 않도록 띄운다. 자리는 .pipeline의 padding-bottom으로 미리 비워 둔다.
+     가운데 도구가 에이전트 추론 이름 바로 밑에 오도록 이름 한가운데에 맞춘다.
+     50%는 이름의 세로 한가운데(=칸의 한가운데)라, 거기서 칸 절반만큼 더 내려가면 칸 아래다 */
+  position: absolute;
+  top: calc(50% + var(--stage-row) / 2 + var(--tool-trunk));
+  left: 50%;
+  transform: translateX(-50%);
+  /* 다섯 칸을 같은 너비로 두어야 가로 막대의 10%·90%가 첫·마지막 창살과 맞는다.
+     가운데 정렬이라 폭이 넓으면 왼쪽이 패널 밖으로 나가므로 이름이 들어갈 만큼만 준다 */
+  width: max-content;
+  display: grid;
+  grid-template-columns: repeat(5, 6rem);
+}
+/* 창살을 잇는 가로 막대. 양 끝이 첫 도구와 마지막 도구의 한가운데다 */
+.tools::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: var(--stage-line);
+  background: var(--color-border);
+}
+/* 줄기. 막대 한가운데(=세 번째 도구의 창살)에서 이름 줄까지 올라간다.
+   막대와 같은 좌표계라 어긋나지 않는다 */
+.tools::after {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--tool-trunk));
+  left: 50%;
+  width: var(--stage-line);
+  height: var(--tool-trunk);
+  background: var(--color-border);
+}
+.tool {
+  position: relative;
+  /* 파이프라인 칸이 아니므로 선 자리도, 갈래를 맞추는 높이도 필요 없다 */
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding-inline: var(--space-1);
+  min-height: 0;
+  text-align: center;
+  white-space: normal;
+  font: var(--text-caption);
+}
+/* 창살 하나. 도구의 상태색을 그대로 받아 지금 도는 쪽만 밝아진다 */
+.tool::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--tool-prong));
+  left: 50%;
+  width: var(--stage-line);
+  height: var(--tool-prong);
+  background: currentColor;
+}
+/* 지금 도는 도구는 깜빡여서 에이전트가 무엇을 고르고 있는지 눈에 띄게 한다 */
+.tool[data-status="started"] {
+  animation: line-pulse 1.2s ease-in-out infinite;
 }
 
 /* 결과 */
 .results {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
+  /* 남는 세로 공간을 모두 받는다. 기준을 0으로 둬야 안쪽 칸의 높이가 확정된다 */
+  flex: 1 1 0;
+  min-height: 0;
 }
-.answer {
+/* 최종 답변: 질문 입력란의 두 배 높이로 고정하고, 넘치는 글은 이 안에서만 스크롤한다 */
+.answerText {
   margin: 0;
-  padding: 20px 24px;
-  font-size: clamp(16px, 1.6vw, 18px);
-  line-height: 1.8;
-  word-break: keep-all;
+  height: calc(var(--question-height) * 2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  font: var(--text-body-lg);
   white-space: pre-line;
 }
 .warnings {
   margin: 0;
-  padding: 12px 20px 12px 36px;
-  color: #d9c58a;
-  font-size: 14px;
-  line-height: 1.6;
+  padding-left: var(--space-5);
+  font: var(--text-body-sm);
 }
 .empty {
-  margin: 0;
-  padding: 24px;
-  color: #b4c0b6;
+  color: var(--color-text-secondary);
   text-align: center;
 }
 
-/* 왼쪽 2/3 게임 목록, 오른쪽 1/3 트레일러 */
+/*
+ * 왼쪽 카드 목록, 오른쪽 트레일러. 남는 세로 공간을 모두 받고 그 높이를 트레일러 크기의 기준으로 쓴다.
+ * container-type: size로 높이가 내용과 무관하게 확정되므로 안쪽에서 cqh 단위를 쓸 수 있다.
+ */
 .columns {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
+  display: flex;
+  gap: var(--space-5);
+  align-items: stretch;
+  /* 두 칸이 상한에 걸려 가로가 남으면 양옆으로 나눠 가운데에 모은다 */
+  justify-content: center;
+  flex: 1 1 0;
+  container-type: size;
+  /* 화면이 아주 낮을 때 칸이 뭉개지지 않게 막는 바닥값 */
+  min-height: 220px;
+}
+/* 목록을 absolute로 띄워 칸 높이를 늘리지 않게 한다. 높이는 옆 칸과 같이 늘어난다 */
+.listWrap {
+  position: relative;
+  flex: 1 1 0;
+  /* 트레일러가 좁아지는 낮은 화면에서 로고 주변이 허전해지지 않게 막는 상한 */
+  max-width: 42cqw;
+  min-width: 0;
+  min-height: 0;
 }
 .list {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  min-width: 0;
+  gap: var(--space-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* 스크롤바는 감추고 카드만 움직이게 한다 */
+  scrollbar-width: none;
+}
+.list::-webkit-scrollbar {
+  display: none;
 }
 
+/* 카드: 감싸는 면 없이 로고와 이름만 두고, 누르면 그 아래로 상세 정보 패널이 열린다 */
 .card {
-  padding: 18px 20px;
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
-  cursor: pointer;
-  transition:
-    border-color 0.2s,
-    background-color 0.2s,
-    box-shadow 0.2s;
-}
-.card:hover {
-  border-color: rgba(182, 230, 135, 0.45);
-}
-.cardSelected,
-.cardSelected:hover {
-  border-color: #b6e687;
-  background: rgba(20, 30, 22, 0.82);
-  box-shadow: 0 0 0 1px rgba(182, 230, 135, 0.35);
-}
-.logoButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 112px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  background: rgba(0, 0, 0, 0.28);
-  color: inherit;
-  cursor: pointer;
-}
-.logoButton:hover,
-.logoButton:focus-visible {
-  border-color: rgba(182, 230, 135, 0.6);
-  outline: none;
-}
-.logoImage {
-  max-width: 100%;
-  max-height: 96px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
-}
-.logoText {
-  font-weight: 800;
-  font-size: 20px;
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-  text-align: center;
-  word-break: keep-all;
-}
-.cardBody {
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  min-width: 0;
+  gap: var(--space-3);
+}
+.cardHeading {
+  margin: 0;
+  font: inherit;
+}
+.thumb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+/* 로고는 칸 너비를 꽉 채우고, 세로만 막아 카드 높이가 들쭉날쭉해지지 않게 한다 */
+.logoImage {
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  filter: var(--filter-drop-shadow);
+}
+.logoText {
+  padding: var(--space-6) 0;
+  font: var(--text-headline);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: var(--tracking-title);
+  text-shadow: var(--shadow-text);
+}
+/* 감싸는 면이 없어져 테두리 대신 밝기와 제목 색으로 고른 게임을 나타낸다 */
+.logoImage,
+.logoText {
+  opacity: 0.7;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+.thumb:hover .logoImage,
+.thumb:hover .logoText,
+.cardSelected .logoImage,
+.cardSelected .logoText {
+  opacity: 1;
 }
 .cardTitle {
-  margin: 0;
-  font-size: 20px;
-  letter-spacing: -0.02em;
+  font: var(--text-title);
+  letter-spacing: var(--tracking-title);
+  text-shadow: var(--shadow-text);
+}
+.cardSelected .cardTitle {
+  color: var(--color-text-accent);
+}
+/* 펼친 상세 정보. hidden일 때 display:flex가 이기지 않도록 선택자를 한 단계 더 준다 */
+.cardDetail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.cardDetail[hidden] {
+  display: none;
 }
 .cardMeta {
-  margin: 4px 0 0;
-  color: #b4c0b6;
-  font-size: 13px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font: var(--text-caption);
 }
 .facts {
   margin: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 6px 14px;
-  font-size: 14px;
-  line-height: 1.5;
+  gap: var(--space-1-5) var(--space-3);
+  font: var(--text-body-sm);
 }
 .facts dt {
-  color: #98a69b;
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 .facts dd {
   margin: 0;
-  word-break: keep-all;
 }
 .badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
+  margin-left: var(--space-2);
   vertical-align: 1px;
-}
-.badge[data-status="met"] {
-  background: rgba(182, 230, 135, 0.18);
-  color: #c9f3a3;
-}
-.badge[data-status="unmet"] {
-  background: rgba(255, 120, 120, 0.18);
-  color: #ffb3b3;
-}
-.badge[data-status="unknown"] {
-  background: rgba(255, 255, 255, 0.1);
-  color: #c9d3cb;
 }
 .review {
   margin: 0;
-  line-height: 1.7;
-  word-break: keep-all;
 }
 .reviewMissing {
-  color: #98a69b;
+  color: var(--color-text-muted);
 }
 .links {
   margin: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  font-size: 13px;
+  gap: var(--space-3);
+  font: var(--text-caption);
 }
 .links a {
-  color: #b6e687;
+  color: var(--color-text-accent);
+  text-underline-offset: 3px;
+}
+.links a:hover {
+  text-decoration-thickness: 2px;
 }
 
+/*
+ * 너비를 남는 세로 길이에서 거꾸로 구한다. 16:9 영상이 세로를 꽉 채우는 너비가 되고,
+ * 70cqw는 화면이 아주 높을 때 목록 칸이 지나치게 좁아지지 않게 막는 상한이다.
+ */
 .trailer {
-  position: sticky;
-  top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: center;
+  flex: none;
+  width: min(calc(100cqh * 16 / 9), 70cqw);
   min-width: 0;
 }
 .trailerFrame {
   display: block;
+  flex: none;
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 0;
-  border-radius: 14px;
-  background: #000;
+  border-radius: var(--radius-md);
+  background: var(--color-media);
 }
 .trailerEmpty {
   display: grid;
+  flex: none;
   place-items: center;
+  width: 100%;
   aspect-ratio: 16 / 9;
-  padding: 16px;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 14px;
-  color: #98a69b;
-  font-size: 14px;
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  font: var(--text-body-sm);
   text-align: center;
-  background: rgba(12, 18, 14, 0.4);
-}
-.trailerCaption {
-  margin: 0;
-  color: #b4c0b6;
-  font-size: 13px;
-}
-
-.excluded {
-  padding: 14px 20px;
-  color: #b4c0b6;
-  font-size: 14px;
-}
-.excluded summary {
-  cursor: pointer;
-}
-.excluded ul {
-  margin: 10px 0 0;
-  padding-left: 20px;
-  line-height: 1.7;
-}
-.excluded strong {
-  color: #f1f5ed;
-  font-weight: 600;
 }
 
 @media (max-width: 900px) {
+  /* 한 칸으로 접히면 한 화면에 담을 수 없으므로 세로로 늘어나는 배치를 모두 되돌린다 */
+  .page {
+    height: auto;
+    min-height: 100dvh;
+  }
   .form {
     flex-direction: column;
   }
   .actions {
     flex-direction: row;
   }
+  .results {
+    flex: none;
+  }
   .columns {
-    grid-template-columns: minmax(0, 1fr);
+    flex-direction: column;
+    flex: none;
+    container-type: normal;
+    min-height: 0;
   }
   .trailer {
-    position: static;
     order: -1;
+    width: 100%;
   }
-  .card {
-    grid-template-columns: minmax(0, 1fr);
+  /* 트레일러가 높이를 정해주지 않으므로 목록 높이를 직접 준다 */
+  .listWrap {
+    flex: none;
+    max-width: none;
+    height: 380px;
   }
-  .logoButton {
-    min-height: 88px;
+  .logoImage {
+    max-height: 140px;
+  }
+  .pipeline {
+    --stage-row: 26px;
+    --stage-link: 40px;
+    --tool-trunk: 10px;
+    --tool-prong: 10px;
+    --tool-drop: 60px;
+  }
+  /* 좁은 화면은 칸을 벌릴 여유가 없다. 창살을 가운데 맞추면 왼쪽이 잘리므로
+     예전처럼 이름 왼쪽 끝에 걸고 첫 도구 위로 줄기를 내린다 */
+  .tools {
+    left: 0;
+    transform: none;
+    grid-template-columns: repeat(5, 4.5rem);
+  }
+  .tools::after {
+    left: 10%;
+  }
+  .stage {
+    font: var(--text-caption);
   }
 }
 
@@ -466,24 +574,12 @@
     opacity: 1;
   }
 }
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes pulse {
+@keyframes line-pulse {
   0%,
   100% {
-    transform: scale(0.8);
+    opacity: 1;
   }
   50% {
-    transform: scale(1.25);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .backdropImage,
-  .spinner,
-  .stage[data-status="started"] .stageIcon {
-    animation: none;
+    opacity: 0.4;
   }
 }

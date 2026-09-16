@@ -1,0 +1,72 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
+}
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.md {
+  min-height: var(--control-height-md);
+  padding: 0 var(--space-5);
+  font: var(--text-label);
+}
+.sm {
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  font: var(--text-label-sm);
+}
+
+/* 연두 버튼. 화면의 핵심 행동 하나 */
+.primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  box-shadow: 0 0 24px -6px var(--color-primary-ring);
+}
+.primary:active:not(:disabled) {
+  background: var(--color-primary-active);
+  box-shadow: none;
+}
+
+/* 테두리 버튼. 취소·보조 행동 */
+.secondary {
+  background: var(--color-surface-glass);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+}
+.secondary:hover:not(:disabled) {
+  border-color: var(--color-border-accent);
+}
+.secondary:active:not(:disabled) {
+  background: var(--color-surface-glass-raised);
+}
+
+/* 배경 없는 버튼. 덜 중요한 행동 */
+.ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+.ghost:hover:not(:disabled) {
+  background: var(--color-neutral-subtle);
+  color: var(--color-text);
+}
+.ghost:active:not(:disabled) {
+  background: var(--color-surface-glass-raised);
+}

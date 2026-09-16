@@ -3,6 +3,9 @@
 import { useState } from "react";
 
 import styles from "@/components/RecommendScreen.module.css";
+import { Badge, type BadgeTone } from "@/components/ui/Badge";
+import { Panel } from "@/components/ui/Panel";
+import { cx } from "@/lib/cx";
 import type {
   CheckStatus,
   ConditionCheck,
@@ -15,25 +18,28 @@ import type {
 type Props = {
   evaluated: EvaluatedGame;
   selected: boolean;
-  onSelect: () => void;
+  /** 상세 정보를 펼친 카드인지. 한 번에 하나만 열린다. */
+  expanded: boolean;
+  onToggle: () => void;
 };
 
 /** skipped는 사용자가 그 조건을 걸지 않은 것이라 표시하지 않는다. */
-const CHECK_LABELS: Record<CheckStatus, string | null> = {
-  met: "충족",
-  unmet: "미충족",
-  unknown: "확인 불가",
+const CHECK_BADGES: Record<CheckStatus, { label: string; tone: BadgeTone } | null> = {
+  met: { label: "충족", tone: "success" },
+  unmet: { label: "미충족", tone: "danger" },
+  unknown: { label: "확인 불가", tone: "neutral" },
   skipped: null,
 };
 
 const krw = new Intl.NumberFormat("ko-KR");
 
 /**
- * 추천 게임 하나. 위의 로고(없으면 이름)가 선택 버튼이고, 본문은 가격·최소 사양·리뷰 요약이다.
- * 선택하면 배경 배너와 트레일러가 이 게임으로 바뀐다.
+ * 추천 게임 하나. 평소에는 감싸는 면 없이 로고(없으면 이름)와 제목만 놓고,
+ * 누르면 가격·최소 사양·리뷰 요약 패널이 아래로 펼쳐진다. 누른 게임으로 배경 배너와 트레일러도 바뀐다.
  */
-export function GameCard({ evaluated, selected, onSelect }: Props) {
+export function GameCard({ evaluated, selected, expanded, onToggle }: Props) {
   const { game, price, hardware, review, media } = evaluated;
+  const detailId = `game-detail-${game.igdb_id}`;
   const tags = [...game.genres, ...game.themes];
   const meta = [
     tags.length > 0 ? tags.join(" · ") : null,
@@ -46,24 +52,22 @@ export function GameCard({ evaluated, selected, onSelect }: Props) {
   ].filter((link): link is { href: string; label: string } => link !== null);
 
   return (
-    <article
-      className={`${styles.panel} ${styles.card} ${selected ? styles.cardSelected : ""}`}
-      onClick={onSelect}
-    >
-      <button
-        type="button"
-        className={styles.logoButton}
-        aria-pressed={selected}
-        aria-label={`${game.name} 선택`}
-      >
-        <Logo media={media} name={game.name} />
-      </button>
+    <article className={cx(styles.card, selected && styles.cardSelected)}>
+      <h2 className={styles.cardHeading}>
+        <button
+          type="button"
+          className={styles.thumb}
+          aria-expanded={expanded}
+          aria-controls={detailId}
+          onClick={onToggle}
+        >
+          <Logo media={media} name={game.name} />
+          <span className={styles.cardTitle}>{game.name}</span>
+        </button>
+      </h2>
 
-      <div className={styles.cardBody}>
-        <div>
-          <h2 className={styles.cardTitle}>{game.name}</h2>
-          {meta.length > 0 && <p className={styles.cardMeta}>{meta.join(" · ")}</p>}
-        </div>
+      <Panel id={detailId} padding="sm" className={styles.cardDetail} hidden={!expanded}>
+        {meta.length > 0 && <p className={styles.cardMeta}>{meta.join(" · ")}</p>}
 
         <dl className={styles.facts}>
           <dt>가격</dt>
@@ -97,7 +101,7 @@ export function GameCard({ evaluated, selected, onSelect }: Props) {
             ))}
           </p>
         )}
-      </div>
+      </Panel>
     </article>
   );
 }
@@ -121,12 +125,12 @@ function Logo({ media, name }: { media: GameMedia | null; name: string }) {
 }
 
 function CheckBadge({ check }: { check: ConditionCheck }) {
-  const label = CHECK_LABELS[check.status];
-  if (label === null) return null;
+  const badge = CHECK_BADGES[check.status];
+  if (badge === null) return null;
   return (
-    <span className={styles.badge} data-status={check.status} title={check.reason}>
-      {label}
-    </span>
+    <Badge tone={badge.tone} className={styles.badge} title={check.reason}>
+      {badge.label}
+    </Badge>
   );
 }
 

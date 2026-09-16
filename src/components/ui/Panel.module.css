@@ -1,0 +1,53 @@
+.panel {
+  margin: 0;
+  background: var(--color-surface-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+}
+
+.padSm {
+  padding: var(--space-3) var(--space-5);
+}
+.padMd {
+  padding: var(--space-5) var(--space-6);
+}
+.padLg {
+  padding: var(--space-8);
+}
+
+.danger {
+  border-color: var(--color-danger-border);
+  color: var(--color-danger-text);
+}
+.warning {
+  border-color: var(--color-warning-border);
+  color: var(--color-warning-text);
+}
+
+.interactive {
+  cursor: pointer;
+  transition:
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
+}
+.interactive:hover {
+  border-color: var(--color-border-accent);
+}
+.selected,
+.selected:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-glass-raised);
+  box-shadow: var(--shadow-glow);
+}
+
+@media (max-width: 600px) {
+  .padMd {
+    padding: var(--space-4) var(--space-5);
+  }
+  .padLg {
+    padding: var(--space-6);
+  }
+}
