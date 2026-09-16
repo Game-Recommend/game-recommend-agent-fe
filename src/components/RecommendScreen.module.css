@@ -293,6 +293,15 @@
 .tool[data-status="started"] {
   animation: line-pulse 1.2s ease-in-out infinite;
 }
+/* 같은 도구를 다시 부른 횟수. 한 번만 부른 도구는 밝힌 색이 이미 말해 주므로 두 번째부터 단다.
+   Badge의 회색 대신 도구의 상태색을 받아야 이름과 한 덩어리로 읽히므로 .tools를 앞에 세워 덮는다 */
+.tools .toolCalls {
+  margin-left: var(--space-1);
+  padding: 0 var(--space-1-5);
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
 
 /* 결과 */
 .results {
