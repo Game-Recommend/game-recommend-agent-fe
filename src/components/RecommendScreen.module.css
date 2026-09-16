@@ -106,19 +106,26 @@
 .pipeline {
   /* 한 갈래의 높이. 두 갈래 칸은 이 두 배가 되고, 그때 선의 25%·75%가 각 갈래의 한가운데다 */
   --stage-row: 32px;
-  --stage-link: 26px;
+  /* 칸 사이를 넓게 벌려야 에이전트 추론이 왼쪽 끝에서 충분히 떨어진다.
+     그래야 그 밑에 가운데를 맞춘 창살이 패널 밖으로 넘치지 않는다 */
+  --stage-link: 132px;
   --stage-line: 1px;
+  /* 에이전트 칸 이름에서 가로 막대까지 내려가는 줄기와, 막대에서 도구로 내려가는 창살 */
+  --tool-trunk: 12px;
+  --tool-prong: 12px;
+  /* 띄워 놓은 창살과 도구 이름이 들어갈 자리 */
+  --tool-drop: 68px;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 var(--tool-drop);
   display: flex;
-  /* 선이 두 갈래 칸의 높이를 그대로 받아야 25%·75% 계산이 맞는다 */
-  align-items: stretch;
+  /* 에이전트 칸은 창살·도구만큼 아래로 길어지므로 칸끼리는 위를 맞춘다 */
+  align-items: flex-start;
   min-width: max-content;
 }
 .step {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 .branches {
   list-style: none;
@@ -166,8 +173,10 @@
 /* 칸을 잇는 선. 모양은 currentColor 그라디언트로 그리므로 상태는 색만 바꾼다 */
 .link {
   flex: none;
-  align-self: stretch;
+  /* 칸이 아래로 길어져도 선은 이름 줄 높이에 머문다 */
+  height: var(--stage-row);
   width: var(--stage-link);
+  flex: none;
   color: var(--color-border);
   background-repeat: no-repeat;
   transition: color var(--duration-base) ease;
@@ -190,6 +199,9 @@
 }
 /* 다음 칸이 두 갈래: 가운데로 들어와 세로선을 타고 위아래로 벌어진다 */
 .linkFork {
+  /* 두 갈래 칸은 선이 칸 높이를 그대로 받아야 25%·75% 계산이 맞는다 */
+  align-self: stretch;
+  height: auto;
   background-image:
     linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor),
     linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor);
@@ -198,11 +210,88 @@
 }
 /* 두 갈래 → 한 갈래: 세로선으로 모여 가운데로 빠져나간다 */
 .linkMerge {
+  align-self: stretch;
+  height: auto;
   background-image:
     linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor),
     linear-gradient(currentColor, currentColor), linear-gradient(currentColor, currentColor);
   background-size: 50% var(--stage-line), 50% var(--stage-line), var(--stage-line) 50%, 50% var(--stage-line);
   background-position: left 25%, left 75%, center, right center;
+}
+
+/* 에이전트 추론 칸의 이름. 창살은 이 이름에만 기준을 걸어서, 뒤에 detail이 붙어 칸이
+   넓어져도 가운데가 밀리지 않는다. 창살 자체는 이름보다 훨씬 넓어서 흐름에 두면 뒤 칸을
+   그만큼 밀어내므로 띄워서 매단다 */
+.agentName {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+/* 에이전트가 고를 수 있는 도구를 모두 매단다. 순서도 호출 여부도 질문마다 달라 서로 잇지는 않는다.
+   실제로 고른 도구만 연두로 밝히므로, 끝까지 옅게 남은 이름이 "이번엔 안 골랐다"는 뜻이 된다 */
+.tools {
+  list-style: none;
+  margin: 0;
+  padding: var(--tool-prong) 0 0;
+  /* 뒤 칸을 밀지 않도록 띄운다. 자리는 .pipeline의 padding-bottom으로 미리 비워 둔다.
+     가운데 도구가 에이전트 추론 이름 바로 밑에 오도록 이름 한가운데에 맞춘다.
+     50%는 이름의 세로 한가운데(=칸의 한가운데)라, 거기서 칸 절반만큼 더 내려가면 칸 아래다 */
+  position: absolute;
+  top: calc(50% + var(--stage-row) / 2 + var(--tool-trunk));
+  left: 50%;
+  transform: translateX(-50%);
+  /* 다섯 칸을 같은 너비로 두어야 가로 막대의 10%·90%가 첫·마지막 창살과 맞는다.
+     가운데 정렬이라 폭이 넓으면 왼쪽이 패널 밖으로 나가므로 이름이 들어갈 만큼만 준다 */
+  width: max-content;
+  display: grid;
+  grid-template-columns: repeat(5, 6rem);
+}
+/* 창살을 잇는 가로 막대. 양 끝이 첫 도구와 마지막 도구의 한가운데다 */
+.tools::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: var(--stage-line);
+  background: var(--color-border);
+}
+/* 줄기. 막대 한가운데(=세 번째 도구의 창살)에서 이름 줄까지 올라간다.
+   막대와 같은 좌표계라 어긋나지 않는다 */
+.tools::after {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--tool-trunk));
+  left: 50%;
+  width: var(--stage-line);
+  height: var(--tool-trunk);
+  background: var(--color-border);
+}
+.tool {
+  position: relative;
+  /* 파이프라인 칸이 아니므로 선 자리도, 갈래를 맞추는 높이도 필요 없다 */
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding-inline: var(--space-1);
+  min-height: 0;
+  text-align: center;
+  white-space: normal;
+  font: var(--text-caption);
+}
+/* 창살 하나. 도구의 상태색을 그대로 받아 지금 도는 쪽만 밝아진다 */
+.tool::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--tool-prong));
+  left: 50%;
+  width: var(--stage-line);
+  height: var(--tool-prong);
+  background: currentColor;
+}
+/* 지금 도는 도구는 깜빡여서 에이전트가 무엇을 고르고 있는지 눈에 띄게 한다 */
+.tool[data-status="started"] {
+  animation: line-pulse 1.2s ease-in-out infinite;
 }
 
 /* 결과 */
@@ -457,7 +546,20 @@
   }
   .pipeline {
     --stage-row: 26px;
-    --stage-link: 18px;
+    --stage-link: 40px;
+    --tool-trunk: 10px;
+    --tool-prong: 10px;
+    --tool-drop: 60px;
+  }
+  /* 좁은 화면은 칸을 벌릴 여유가 없다. 창살을 가운데 맞추면 왼쪽이 잘리므로
+     예전처럼 이름 왼쪽 끝에 걸고 첫 도구 위로 줄기를 내린다 */
+  .tools {
+    left: 0;
+    transform: none;
+    grid-template-columns: repeat(5, 4.5rem);
+  }
+  .tools::after {
+    left: 10%;
   }
   .stage {
     font: var(--text-caption);

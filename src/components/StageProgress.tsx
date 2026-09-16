@@ -2,7 +2,13 @@ import styles from "@/components/RecommendScreen.module.css";
 import { Panel } from "@/components/ui/Panel";
 import { Spinner } from "@/components/ui/Spinner";
 import { cx } from "@/lib/cx";
-import { PIPELINE_FLOW, type StageEvent, type StageStatus } from "@/lib/recommendation";
+import {
+  AGENT_STAGE,
+  AGENT_TOOL_STAGES,
+  PIPELINE_FLOW,
+  type StageEvent,
+  type StageStatus,
+} from "@/lib/recommendation";
 
 type NodeStatus = StageStatus | "pending";
 
@@ -48,8 +54,10 @@ function BranchText({ name, detail, status }: Branch) {
 }
 
 /**
- * SSE 진행 표시. 백엔드가 어떤 순서로 이벤트를 보내든 PIPELINE_FLOW의 다섯 칸을 고정으로 그리고,
- * 지금 도는 칸만 연두로 밝힌다. 이벤트가 하나도 없으면(JSON으로 응답하는 백엔드) 안내 문구만 보인다.
+ * SSE 진행 표시. 백엔드가 어떤 순서로 이벤트를 보내든 PIPELINE_FLOW의 네 칸을 고정으로 그리고,
+ * 지금 도는 칸만 연두로 밝힌다. 에이전트 추론 칸 밑으로는 창살을 내려 고를 수 있는 도구 다섯 개를
+ * 매달고, 실제로 고른 것만 밝히며 지금 도는 도구는 깜빡인다. 끝까지 옅게 남은 도구는 이번 질문에
+ * 고르지 않았다는 뜻이다. 이벤트가 하나도 없으면(JSON으로 응답하는 백엔드) 안내 문구만 보인다.
  */
 export function StageProgress({ events }: { events: StageEvent[] }) {
   const latest = new Map<string, StageEvent>();
@@ -61,6 +69,11 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
       return { name, detail: event?.detail ?? null, status: event?.status ?? "pending" };
     });
     return { branches, status: stepStatus(branches.map((branch) => branch.status)) };
+  });
+
+  const tools: Branch[] = AGENT_TOOL_STAGES.map((name) => {
+    const event = latest.get(name);
+    return { name, detail: event?.detail ?? null, status: event?.status ?? "pending" };
   });
 
   return (
@@ -83,7 +96,29 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
                       aria-hidden="true"
                     />
                   )}
-                  {step.branches.length === 1 ? (
+                  {step.branches[0].name === AGENT_STAGE ? (
+                    // 창살은 이름에만 기준을 건다. detail이 붙어 칸이 넓어져도 가운데가 밀리지 않는다
+                    <div className={styles.stage} data-status={step.branches[0].status}>
+                      <div className={styles.agentName}>
+                        {step.branches[0].name}
+                        <ul className={styles.tools}>
+                          {tools.map((tool) => (
+                            <li
+                              key={tool.name}
+                              className={cx(styles.stage, styles.tool)}
+                              data-status={tool.status}
+                            >
+                              <BranchText {...tool} />
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {step.branches[0].detail && (
+                        <span className={styles.stageDetail}>{step.branches[0].detail}</span>
+                      )}
+                      <span className="visually-hidden">{STATUS_LABELS[step.branches[0].status]}</span>
+                    </div>
+                  ) : step.branches.length === 1 ? (
                     <span className={styles.stage} data-status={step.branches[0].status}>
                       <BranchText {...step.branches[0]} />
                     </span>

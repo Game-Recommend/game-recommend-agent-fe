@@ -164,22 +164,25 @@ export const MOCK_RECOMMENDATION: RecommendationResponse = {
 };
 
 /** 백엔드 SSE와 같은 순서의 진행 이벤트. 가격·하드웨어, 리뷰·미디어는 병렬이라 섞여 온다. */
+// 에이전트 백엔드가 보내는 순서. 에이전트 추론이 도구 호출 전체를 감싸고, 그 뒤에 조건 판정·미디어가 온다
 const MOCK_STAGES: ReadonlyArray<readonly [string, StageStatus, string | null]> = [
   ["질문 분해", "started", null],
   ["질문 분해", "completed", null],
+  ["에이전트 추론", "started", null],
   ["게임 검색", "started", null],
   ["게임 검색", "completed", "후보 3개"],
   ["가격", "started", null],
   ["하드웨어", "started", null],
   ["가격", "completed", null],
   ["하드웨어", "completed", null],
-  ["조건 판정", "completed", "통과 2개 중 2개 선택, 제외 1개"],
+  ["리뷰 점수", "started", null],
+  ["리뷰 점수", "completed", null],
   ["리뷰 요약", "started", null],
+  ["리뷰 요약", "completed", null],
+  ["에이전트 추론", "completed", "도구 호출 5회"],
+  ["조건 판정", "completed", "추천 2개, 제외 1개"],
   ["미디어", "started", null],
   ["미디어", "completed", null],
-  ["리뷰 요약", "completed", null],
-  ["최종 답변 생성", "started", null],
-  ["최종 답변 생성", "completed", null],
 ];
 
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
