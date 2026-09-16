@@ -1,0 +1,39 @@
+.textarea {
+  display: block;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-glass);
+  color: var(--color-text);
+  font: var(--text-body);
+  resize: vertical;
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
+}
+.textarea::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+.textarea:hover:not(:disabled) {
+  border-color: var(--color-border-control-hover);
+}
+/* 테두리와 링으로 포커스를 표시한다. 투명 outline은 고대비 모드에서 윤곽선으로 드러난다 */
+.textarea:focus-visible {
+  outline: var(--focus-ring-width) solid transparent;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-ring);
+}
+.textarea[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+.textarea[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-danger-subtle);
+}
+.textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

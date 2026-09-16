@@ -1,0 +1,5 @@
+<!-- 브라우저 탭 아이콘. src/components/ui/BrandMark.tsx와 같은 모양이고, 색만 토큰 값(--lime-500, --gray-950)으로 고정했다. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
+  <path d="M7 4.75H17A5 5 0 0 1 22 9.75C22 13.45 21.3 17.05 19.5 18.55C18.2 19.65 16.5 19.25 15.8 17.75L14.3 14.85H9.7L8.2 17.75C7.5 19.25 5.8 19.65 4.5 18.55C2.7 17.05 2 13.45 2 9.75A5 5 0 0 1 7 4.75Z" fill="#baf956"/>
+  <path d="M10.1 6.75 15.2 9.55 10.1 12.35Z" fill="#0f110f" stroke="#0f110f" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>

@@ -141,16 +141,14 @@ export type ErrorEvent = { event: "error"; detail: string };
 export type PipelineEvent = StageEvent | ResultEvent | ErrorEvent;
 
 /**
- * 백엔드가 실행하는 순서대로의 단계 이름. 진행 표시의 기본 순서입니다.
- * 가격·하드웨어, 리뷰 요약·미디어는 병렬이라 이벤트 순서가 섞일 수 있습니다.
+ * 진행 표시가 고정으로 그리는 파이프라인. 한 칸에 나란히 둔 이름은 백엔드가 병렬로 실행하는 단계라
+ * 이벤트 순서가 섞여 옵니다. 백엔드는 가격·하드웨어 뒤에 "조건 판정"도 보내지만,
+ * 그 결과가 추천·제외 목록으로 그대로 드러나므로 화면에서는 칸을 두지 않습니다.
  */
-export const PIPELINE_STAGES: readonly string[] = [
-  "질문 분해",
-  "게임 검색",
-  "가격",
-  "하드웨어",
-  "조건 판정",
-  "리뷰 요약",
-  "미디어",
-  "최종 답변 생성",
+export const PIPELINE_FLOW: readonly (readonly string[])[] = [
+  ["질문 분해"],
+  ["게임 검색"],
+  ["가격", "하드웨어"],
+  ["리뷰 요약", "미디어"],
+  ["최종 답변 생성"],
 ];

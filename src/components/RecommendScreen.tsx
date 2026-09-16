@@ -7,12 +7,17 @@ import { HeroBackdrop } from "@/components/HeroBackdrop";
 import styles from "@/components/RecommendScreen.module.css";
 import { StageProgress } from "@/components/StageProgress";
 import { TrailerPanel } from "@/components/TrailerPanel";
+import { BrandMark } from "@/components/ui/BrandMark";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { Panel } from "@/components/ui/Panel";
+import { TextArea } from "@/components/ui/TextArea";
 import {
   RecommendationError,
   requestRecommendation,
   type RecommendationRequester,
 } from "@/lib/recommend-client";
-import type { EvaluatedGame, RecommendationResponse, StageEvent } from "@/lib/recommendation";
+import type { RecommendationResponse, StageEvent } from "@/lib/recommendation";
 
 /** 프록시가 검사하는 질문 길이 상한과 같습니다. */
 const MAX_QUESTION_LENGTH = 500;
@@ -59,6 +64,7 @@ export function RecommendScreen() {
   const [question, setQuestion] = useState("");
   const [phase, setPhase] = useState<Phase>({ status: "idle" });
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const submit = useCallback(async (text: string) => {
@@ -71,6 +77,7 @@ export function RecommendScreen() {
     abortRef.current = controller;
     setPhase({ status: "loading", stages: [] });
     setSelectedId(null);
+    setExpandedId(null);
 
     const onStage = (event: StageEvent) => {
       if (controller.signal.aborted) return;
@@ -98,6 +105,12 @@ export function RecommendScreen() {
       if (abortRef.current === controller) abortRef.current = null;
     }
   }, []);
+
+  /** 카드를 누르면 배경·트레일러가 그 게임으로 바뀐다. 펼친 카드를 다시 누르면 상세 정보만 접는다. */
+  const toggleGame = (igdbId: number) => {
+    setSelectedId(igdbId);
+    setExpandedId((prev) => (prev === igdbId ? null : igdbId));
+  };
 
   const cancel = () => {
     abortRef.current?.abort();
@@ -127,13 +140,16 @@ export function RecommendScreen() {
       <HeroBackdrop media={selected?.media ?? null} />
       <main className={styles.page}>
         <header className={styles.header}>
-          <p className={styles.brand}>GAME RECOMMEND</p>
+          <p className={styles.brand}>
+            <BrandMark className={styles.brandMark} />
+            GAME RECOMMEND
+          </p>
           <h1 className={styles.title}>다음으로 즐길 게임, 나에게 맞게.</h1>
           <form className={styles.form} onSubmit={onSubmit}>
             <label className="visually-hidden" htmlFor="question">
               게임 추천 질문
             </label>
-            <textarea
+            <TextArea
               id="question"
               className={styles.input}
               value={question}
@@ -145,30 +161,20 @@ export function RecommendScreen() {
               autoComplete="off"
             />
             <div className={styles.actions}>
-              <button
-                type="submit"
-                className={styles.button}
-                disabled={loading || question.trim() === ""}
-              >
+              <Button type="submit" disabled={loading || question.trim() === ""}>
                 추천받기
-              </button>
+              </Button>
               {loading && (
-                <button
-                  type="button"
-                  className={`${styles.button} ${styles.buttonGhost}`}
-                  onClick={cancel}
-                >
+                <Button variant="secondary" onClick={cancel}>
                   취소
-                </button>
+                </Button>
               )}
             </div>
           </form>
           <ul className={styles.examples} aria-label="예시 질문">
             {EXAMPLE_QUESTIONS.map((example) => (
               <li key={example.label}>
-                <button
-                  type="button"
-                  className={styles.chip}
+                <Chip
                   title={example.question}
                   disabled={loading}
                   onClick={() => {
@@ -177,7 +183,7 @@ export function RecommendScreen() {
                   }}
                 >
                   {example.label}
-                </button>
+                </Chip>
               </li>
             ))}
           </ul>
@@ -186,69 +192,54 @@ export function RecommendScreen() {
         {phase.status === "loading" && <StageProgress events={phase.stages} />}
 
         {phase.status === "error" && (
-          <p className={`${styles.panel} ${styles.error}`} role="alert">
+          <Panel as="p" tone="danger" padding="sm" role="alert">
             {phase.message}
-          </p>
+          </Panel>
         )}
 
         {result && (
           <section className={styles.results} aria-label="추천 결과">
-            <p className={`${styles.panel} ${styles.answer}`}>{result.answer}</p>
+            <Panel padding="sm">
+              <p className={styles.answerText} role="region" aria-label="추천 요약" tabIndex={0}>
+                {result.answer}
+              </p>
+            </Panel>
 
             {result.warnings.length > 0 && (
-              <ul className={`${styles.panel} ${styles.warnings}`} aria-label="안내">
-                {result.warnings.map((warning, index) => (
-                  <li key={`${index}-${warning}`}>{warning}</li>
-                ))}
-              </ul>
+              <Panel tone="warning" padding="sm">
+                <ul className={styles.warnings} aria-label="안내">
+                  {result.warnings.map((warning, index) => (
+                    <li key={`${index}-${warning}`}>{warning}</li>
+                  ))}
+                </ul>
+              </Panel>
             )}
 
             {result.games.length > 0 ? (
               <div className={styles.columns}>
-                <div className={styles.list}>
-                  {result.games.map((item) => (
-                    <GameCard
-                      key={item.game.igdb_id}
-                      evaluated={item}
-                      selected={item.game.igdb_id === selectedId}
-                      onSelect={() => setSelectedId(item.game.igdb_id)}
-                    />
-                  ))}
+                <div className={styles.listWrap}>
+                  <div className={styles.list}>
+                    {result.games.map((item) => (
+                      <GameCard
+                        key={item.game.igdb_id}
+                        evaluated={item}
+                        selected={item.game.igdb_id === selectedId}
+                        expanded={item.game.igdb_id === expandedId}
+                        onToggle={() => toggleGame(item.game.igdb_id)}
+                      />
+                    ))}
+                  </div>
                 </div>
                 <TrailerPanel game={selected} />
               </div>
             ) : (
-              <p className={`${styles.panel} ${styles.empty}`}>
+              <Panel as="p" padding="lg" className={styles.empty}>
                 조건을 모두 충족하는 게임을 찾지 못했어요. 조건을 조금 바꿔서 다시 물어보세요.
-              </p>
+              </Panel>
             )}
-
-            {result.excluded_games.length > 0 && <ExcludedGames games={result.excluded_games} />}
           </section>
         )}
       </main>
     </>
-  );
-}
-
-/** 가격·사양 검사에서 빠진 후보. 어떤 조건에 걸렸는지만 짧게 보여준다. */
-function ExcludedGames({ games }: { games: EvaluatedGame[] }) {
-  return (
-    <details className={`${styles.panel} ${styles.excluded}`}>
-      <summary>조건에 맞지 않아 제외한 게임 {games.length}개</summary>
-      <ul>
-        {games.map(({ game, price, hardware }) => {
-          const reasons = [price.check, hardware.check]
-            .filter((check) => check.status === "unmet" || check.status === "unknown")
-            .map((check) => check.reason);
-          return (
-            <li key={game.igdb_id}>
-              <strong>{game.name}</strong>
-              {reasons.length > 0 && <span> · {reasons.join(" / ")}</span>}
-            </li>
-          );
-        })}
-      </ul>
-    </details>
   );
 }

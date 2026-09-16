@@ -1,0 +1,6 @@
+/* 마크 크기는 옆에 오는 글자를 따라간다. 13px 브랜드 표기 옆에서 약 22px이 된다. */
+.mark {
+  flex: none;
+  width: 1.7em;
+  height: 1.7em;
+}
