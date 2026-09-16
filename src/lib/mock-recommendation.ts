@@ -164,7 +164,10 @@ export const MOCK_RECOMMENDATION: RecommendationResponse = {
 };
 
 /** 백엔드 SSE와 같은 순서의 진행 이벤트. 가격·하드웨어, 리뷰·미디어는 병렬이라 섞여 온다. */
-// 에이전트 백엔드가 보내는 순서. 에이전트 추론이 도구 호출 전체를 감싸고, 그 뒤에 조건 판정·미디어가 온다
+// 에이전트 백엔드가 보내는 순서. 에이전트 추론이 LLM의 도구 호출 전체를 감싸고, 그 뒤에 조건 판정·미디어가 온다.
+// 같은 도구가 두 번 도는 두 경로를 모두 담았다. 러너의 안전망이 가격을 다시 부르고(에이전트 추론 안),
+// 후처리가 리뷰 요약을 다시 부른다(조건 판정 뒤, 미디어와 병렬). 화면은 이 started를 세어 ×2 배지를 단다.
+// 에이전트 추론에 붙은 백엔드 총계가 화면의 7회와 다른 것도 실제 그대로다. 백엔드는 LLM이 고른 5회만 센다.
 const MOCK_STAGES: ReadonlyArray<readonly [string, StageStatus, string | null]> = [
   ["질문 분해", "started", null],
   ["질문 분해", "completed", null],
@@ -179,9 +182,15 @@ const MOCK_STAGES: ReadonlyArray<readonly [string, StageStatus, string | null]> 
   ["리뷰 점수", "completed", null],
   ["리뷰 요약", "started", null],
   ["리뷰 요약", "completed", null],
+  // 안전망: 추천 후보 중 가격을 조회하지 않은(또는 조회가 실패한) 게임을 러너가 직접 부른다
+  ["가격", "started", null],
+  ["가격", "completed", null],
   ["에이전트 추론", "completed", "도구 호출 5회"],
   ["조건 판정", "completed", "추천 2개, 제외 1개"],
+  // 후처리: 확정 후보 중 리뷰 요약이 없는 게임을 러너가 부른다. 미디어와 나란히 돈다
+  ["리뷰 요약", "started", null],
   ["미디어", "started", null],
+  ["리뷰 요약", "completed", null],
   ["미디어", "completed", null],
 ];
 

@@ -1,4 +1,5 @@
 import styles from "@/components/RecommendScreen.module.css";
+import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { Spinner } from "@/components/ui/Spinner";
 import { cx } from "@/lib/cx";
@@ -12,7 +13,7 @@ import {
 
 type NodeStatus = StageStatus | "pending";
 
-type Branch = { name: string; detail: string | null; status: NodeStatus };
+type Branch = { name: string; detail: string | null; status: NodeStatus; calls?: number };
 type Step = { branches: Branch[]; status: NodeStatus };
 
 const STATUS_LABELS: Record<NodeStatus, string> = {
@@ -21,6 +22,21 @@ const STATUS_LABELS: Record<NodeStatus, string> = {
   completed: "완료",
   failed: "실패",
 };
+
+const TOOL_NAMES = new Set(AGENT_TOOL_STAGES);
+
+/**
+ * 도구 이름별 호출 수. 도구를 부를 때마다 started가 한 번 오므로 그것만 세며, 같은 도구를 다시
+ * 불러도 늘어난다. 마지막 이벤트만 남기는 latest와 달리 이벤트를 전부 훑어야 반복 호출이 잡힌다.
+ */
+function countToolCalls(events: StageEvent[]): Map<string, number> {
+  const calls = new Map<string, number>();
+  for (const event of events) {
+    if (event.status !== "started" || !TOOL_NAMES.has(event.stage)) continue;
+    calls.set(event.stage, (calls.get(event.stage) ?? 0) + 1);
+  }
+  return calls;
+}
 
 /** 칸 하나의 대표 상태. 갈래가 둘일 때 한쪽만 끝났으면 아직 진행 중으로 본다. */
 function stepStatus(statuses: NodeStatus[]): NodeStatus {
@@ -43,12 +59,23 @@ function linkStatus(from: NodeStatus, to: NodeStatus): NodeStatus {
   return from === "completed" ? "completed" : "pending";
 }
 
-function BranchText({ name, detail, status }: Branch) {
+function BranchText({ name, detail, status, calls = 0 }: Branch) {
   return (
     <>
-      <span>{name}</span>
+      {/* 배지를 이름과 같은 흐름에 두어야 좁은 도구 칸에서 이름 옆에 붙었다가 자연스레 줄을 넘긴다 */}
+      <span>
+        {name}
+        {calls > 1 && (
+          <Badge className={styles.toolCalls} aria-hidden="true">
+            ×{calls}
+          </Badge>
+        )}
+      </span>
       {detail && <span className={styles.stageDetail}>{detail}</span>}
-      <span className="visually-hidden">{STATUS_LABELS[status]}</span>
+      <span className="visually-hidden">
+        {calls > 1 && `${calls}회 호출, `}
+        {STATUS_LABELS[status]}
+      </span>
     </>
   );
 }
@@ -71,10 +98,22 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
     return { branches, status: stepStatus(branches.map((branch) => branch.status)) };
   });
 
+  const calls = countToolCalls(events);
   const tools: Branch[] = AGENT_TOOL_STAGES.map((name) => {
     const event = latest.get(name);
-    return { name, detail: event?.detail ?? null, status: event?.status ?? "pending" };
+    return {
+      name,
+      detail: event?.detail ?? null,
+      status: event?.status ?? "pending",
+      calls: calls.get(name) ?? 0,
+    };
   });
+
+  // 백엔드도 에이전트 추론 완료에 총계를 붙여 보내지만 쓰지 않는다. 그 값은 LLM이 고른 호출만 세어
+  // 러너가 대신 부른 몫(가격·사양 안전망, 리뷰 요약 후처리)이 빠지므로, 화면 숫자가 도중에 거꾸로
+  // 줄고 배지 합과도 어긋난다. 창살에 매단 도구가 실제로 몇 번 돌았는지를 배지와 같은 출처로 센다.
+  const totalCalls = [...calls.values()].reduce((sum, count) => sum + count, 0);
+  const agentDetail = totalCalls > 0 ? `도구 호출 ${totalCalls}회` : null;
 
   return (
     <Panel as="section" aria-live="polite" aria-busy="true">
@@ -113,9 +152,7 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
                           ))}
                         </ul>
                       </div>
-                      {step.branches[0].detail && (
-                        <span className={styles.stageDetail}>{step.branches[0].detail}</span>
-                      )}
+                      {agentDetail && <span className={styles.stageDetail}>{agentDetail}</span>}
                       <span className="visually-hidden">{STATUS_LABELS[step.branches[0].status]}</span>
                     </div>
                   ) : step.branches.length === 1 ? (
