@@ -106,8 +106,8 @@
   --text-headline: var(--font-weight-bold) 1.5rem / 1.3 var(--font-sans); /* 24px 섹션 제목 */
   --text-title: var(--font-weight-bold) 1.25rem / 1.35 var(--font-sans); /* 20px 카드 제목 */
   --text-subtitle: var(--font-weight-semibold) 1rem / 1.4 var(--font-sans); /* 16px 소제목 */
-  --text-body-lg: var(--font-weight-regular) clamp(1rem, 0.95rem + 0.25vw, 1.125rem) / 1.8 var(--font-sans); /* 16~18px 요약문 */
-  --text-body: var(--font-weight-regular) 1rem / 1.6 var(--font-sans); /* 16px 기본 본문·입력 */
+  --text-body-lg: var(--font-weight-regular) clamp(1rem, 0.95rem + 0.25vw, 1.125rem) / 1.8 var(--font-sans); /* 16~18px 머리말 */
+  --text-body: var(--font-weight-regular) 1rem / 1.6 var(--font-sans); /* 16px 기본 본문·입력·추천 요약문 */
   --text-body-sm: var(--font-weight-regular) 0.875rem / 1.6 var(--font-sans); /* 14px 카드 정보 */
   --text-label: var(--font-weight-bold) 0.9375rem / 1.2 var(--font-sans); /* 15px 버튼 */
   --text-label-sm: var(--font-weight-bold) 0.8125rem / 1.2 var(--font-sans); /* 13px 작은 버튼 */
