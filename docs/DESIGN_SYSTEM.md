@@ -97,8 +97,8 @@ docs/DESIGN_SYSTEM.md          이 문서
 | `--text-headline` | 700 · 24px / 1.3 | 섹션 제목 |
 | `--text-title` | 700 · 20px / 1.35 | 카드 제목 |
 | `--text-subtitle` | 600 · 16px / 1.4 | 소제목 |
-| `--text-body-lg` | 400 · 16~18px / 1.8 | 추천 요약문 |
-| `--text-body` | 400 · 16px / 1.6 | 기본 본문, 입력 |
+| `--text-body-lg` | 400 · 16~18px / 1.8 | 문서 머리말 |
+| `--text-body` | 400 · 16px / 1.6 | 기본 본문, 입력, 추천 요약문 |
 | `--text-body-sm` | 400 · 14px / 1.6 | 카드 정보 |
 | `--text-label` / `--text-label-sm` | 700 · 15px / 13px | 버튼 |
 | `--text-caption` | 400 · 13px / 1.5 | 메타, 칩 |

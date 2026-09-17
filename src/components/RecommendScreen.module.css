@@ -312,14 +312,15 @@
   flex: 1 1 0;
   min-height: 0;
 }
-/* 최종 답변: 질문 입력란의 두 배 높이로 고정하고, 넘치는 글은 이 안에서만 스크롤한다 */
+/* 최종 답변: 질문 입력란의 두 배 높이로 고정하고, 넘치는 글은 이 안에서만 스크롤한다.
+   글씨는 질문 입력란과 같은 --text-body로 둬서 묻고 답한 두 글이 같은 크기로 읽히게 한다 */
 .answerText {
   margin: 0;
   height: calc(var(--question-height) * 2);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  font: var(--text-body-lg);
+  font: var(--text-body);
   white-space: pre-line;
 }
 .warnings {
