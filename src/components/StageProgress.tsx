@@ -119,7 +119,7 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
     <Panel as="section" aria-live="polite" aria-busy="true">
       <p className={styles.progressTitle}>
         <Spinner />
-        추천을 준비하고 있어요. 보통 20초 안팎 걸려요.
+        추천을 준비하고 있어요. 보통 10~20초 걸려요.
       </p>
       {events.length > 0 && (
         <div className={styles.pipelineScroll}>

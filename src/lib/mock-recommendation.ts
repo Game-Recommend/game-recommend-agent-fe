@@ -186,7 +186,7 @@ const MOCK_STAGES: ReadonlyArray<readonly [string, StageStatus, string | null]> 
   ["가격", "started", null],
   ["가격", "completed", null],
   ["에이전트 추론", "completed", "도구 호출 5회"],
-  ["조건 판정", "completed", "추천 2개, 제외 1개"],
+  ["조건 판정", "completed", "통과 2개 중 2개 추천, 제외 1개"],
   // 후처리: 확정 후보 중 리뷰 요약이 없는 게임을 러너가 부른다. 미디어와 나란히 돈다
   ["리뷰 요약", "started", null],
   ["미디어", "started", null],
