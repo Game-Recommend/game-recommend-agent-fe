@@ -114,8 +114,11 @@ docs/DESIGN_SYSTEM.md      디자인 시스템 사용 규칙
 
 | 브라우저 → FE 서버 | FE 서버 → 백엔드 | 용도 |
 | --- | --- | --- |
-| `GET /api/health` | `GET /health` | 백엔드 연결·키 설정 확인 |
+| `GET /api/health` | `GET /health` | 백엔드 주소 설정·연결 확인 |
 | `POST /api/recommend` | `POST /recommend` | 추천 요청 (JSON 또는 SSE) |
+
+백엔드의 키 검사는 `POST /recommend`에만 걸려 있고 `/health`에는 없습니다. 그래서 `/api/health`가 200이어도
+`BACKEND_API_KEY`가 맞다는 뜻은 아니며, 키가 없거나 다르면 추천 요청이 502(백엔드 인증 설정)로 실패합니다.
 
 추천 요청 본문은 `{"question": "게임 추천해줘"}`이며, `question`은 공백을 제외하고 1자 이상 500자 이하여야 합니다.
 500자는 프록시와 입력란(`maxLength`)이 거는 상한이고, 백엔드 스키마 자체의 상한은 5000자입니다.

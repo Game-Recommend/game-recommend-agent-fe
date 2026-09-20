@@ -5,7 +5,8 @@ export const dynamic = "force-dynamic";
 
 /**
  * GET /api/health
- * 배포된 프론트 서버가 백엔드 주소·키 설정으로 연결되는지 확인할 때 사용합니다.
+ * 배포된 프론트 서버가 BACKEND_API_URL로 백엔드에 닿는지 확인할 때 사용합니다.
+ * 백엔드의 키 검사는 POST /recommend에만 걸려 있어, 여기서는 BACKEND_API_KEY가 맞는지 알 수 없습니다.
  */
 export function GET() {
   return proxyToBackend("/health", { method: "GET" });
