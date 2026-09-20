@@ -42,7 +42,7 @@ const COLOR_GROUPS: { title: string; kind: "fill" | "text" | "border"; tokens: T
       { name: "--color-surface-raised", note: "한 단계 올라온 면" },
       { name: "--color-surface-glass", note: "흐린 배너 위 패널" },
       { name: "--color-surface-glass-raised", note: "선택된 패널" },
-      { name: "--color-surface-sunken", note: "꺼진 면 (로고 상자)" },
+      { name: "--color-surface-sunken", note: "꺼진 면 (트레일러 빈 영역)" },
     ],
   },
   {
@@ -410,7 +410,7 @@ export default function DesignSystemPage() {
           />
           <Rule
             title="연두 위 글씨는 검정"
-            doExample={<span className={styles.swatchPill} style={{ background: "var(--color-primary)", color: "var(--color-on-primary)" }}>15.2:1 추천받기</span>}
+            doExample={<span className={styles.swatchPill} style={{ background: "var(--color-primary)", color: "var(--color-on-primary)" }}>15.1:1 추천받기</span>}
             dontExample={<span className={styles.swatchPill} style={{ background: "var(--color-primary)", color: "var(--color-text)" }}>1.3:1 추천받기</span>}
           />
           <Rule
