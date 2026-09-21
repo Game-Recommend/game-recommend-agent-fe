@@ -44,11 +44,12 @@ addresses that actually resolve) as if it were arriving over SSE, so the progres
 
 ```text
 src/app/
-├─ layout.tsx        Shared layout, metadata and fonts
-├─ page.tsx          Entry point for the recommendation screen
-├─ globals.css       Global base styles
-├─ icon.svg          Browser tab icon (same shape as BrandMark)
-├─ design-system/    Design system showcase screen (/design-system)
+├─ layout.tsx           Shared layout, metadata and fonts
+├─ page.tsx             Entry point for the recommendation screen
+├─ globals.css          Global base styles
+├─ icon.svg             Browser tab icon (same shape as BrandMark)
+├─ opengraph-image.tsx  Link preview thumbnail (1200×630 PNG, generated at build)
+├─ design-system/       Design system showcase screen (/design-system)
 └─ api/
    ├─ health/route.ts      GET /api/health (proxies the backend /health)
    └─ recommend/route.ts   POST /api/recommend (proxies the backend /recommend, JSON and SSE)
