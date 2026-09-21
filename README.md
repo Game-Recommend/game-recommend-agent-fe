@@ -36,11 +36,12 @@ npm run dev
 
 ```text
 src/app/
-├─ layout.tsx        공통 레이아웃·메타데이터·글꼴
-├─ page.tsx          추천 화면 진입점
-├─ globals.css       전역 기본 스타일
-├─ icon.svg          브라우저 탭 아이콘 (BrandMark와 같은 모양)
-├─ design-system/    디자인 시스템 견본 화면 (/design-system)
+├─ layout.tsx           공통 레이아웃·메타데이터·글꼴
+├─ page.tsx             추천 화면 진입점
+├─ globals.css          전역 기본 스타일
+├─ icon.svg             브라우저 탭 아이콘 (BrandMark와 같은 모양)
+├─ opengraph-image.tsx  링크 공유 썸네일 (1200×630 PNG, 빌드 때 생성)
+├─ design-system/       디자인 시스템 견본 화면 (/design-system)
 └─ api/
    ├─ health/route.ts      GET /api/health (백엔드 /health 프록시)
    └─ recommend/route.ts   POST /api/recommend (백엔드 /recommend 프록시, JSON·SSE)
