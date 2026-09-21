@@ -1,5 +1,7 @@
 # game-recommend-agent-fe
 
+**한국어** · [English](README.en.md)
+
 게임 추천 서비스의 프론트엔드입니다. React·Next.js App Router·TypeScript를 사용합니다.
 백엔드는 [game-recommend-agent-be](https://github.com/Game-Recommend/game-recommend-agent-be)에서 개발합니다.
 LLM이 도구를 골라 부르는 에이전트 방식 백엔드라, 진행 표시가 단계 고정 파이프라인 백엔드와 다릅니다.
