@@ -1,24 +1,39 @@
+import type { Locale } from "@/lib/i18n";
 import type { RecommendationResponse, StageEvent } from "@/lib/recommendation";
 import { readSseMessages } from "@/lib/sse";
 
-/** 프록시·백엔드가 돌려준 `detail` 문장을 그대로 사용자에게 보여주는 오류 */
+/**
+ * 프론트가 만드는 오류의 이름. 화면이 고른 언어로 문장을 골라 쓰도록 문장 대신 이 이름을 던진다.
+ * 프록시·백엔드가 돌려준 문장은 detail에 그대로 담는다. 그 문장의 언어는 백엔드가 정한다.
+ */
+export type RecommendationErrorCode =
+  | "requestFailed"
+  | "invalidPayload"
+  | "emptyBody"
+  | "streamInterrupted"
+  | "pipelineFailed";
+
 export class RecommendationError extends Error {
   constructor(
-    message: string,
+    readonly code: RecommendationErrorCode,
+    readonly detail: string | null = null,
     readonly status?: number,
   ) {
-    super(message);
+    super(detail ?? code);
     this.name = "RecommendationError";
   }
 }
-
-const STREAM_INTERRUPTED = "추천이 끝나기 전에 연결이 끊겼습니다. 다시 시도해 주세요.";
 
 export type RecommendationOptions = {
   /** SSE `stage` 이벤트마다 호출됩니다. JSON으로 응답하는 백엔드에서는 호출되지 않습니다. */
   onStage?: (event: StageEvent) => void;
   /** 중단하면 fetch가 끊기고 프록시가 백엔드 호출도 취소해 파이프라인이 멈춥니다. */
   signal?: AbortSignal;
+  /**
+   * 답변·리뷰 요약을 어떤 언어로 받을지. 프록시가 자기 오류 문장을 고르는 데 쓰고 백엔드로 넘깁니다.
+   * 백엔드가 아직 이 값을 읽지 않으면 무시되고 한국어로 돌아옵니다.
+   */
+  language?: Locale;
 };
 
 export type RecommendationRequester = (
@@ -31,11 +46,14 @@ export type RecommendationRequester = (
  * 프록시가 SSE(`text/event-stream`)로 응답하면 `stage` 이벤트를 onStage로 넘기고 `result` 본문을 돌려줍니다.
  * JSON으로 응답하면(오류 응답이거나 SSE를 지원하지 않는 백엔드) 그대로 해석합니다.
  */
-export const requestRecommendation: RecommendationRequester = async (question, { onStage, signal } = {}) => {
+export const requestRecommendation: RecommendationRequester = async (
+  question,
+  { onStage, signal, language } = {},
+) => {
   const response = await fetch("/api/recommend", {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify(language === undefined ? { question } : { question, language }),
     signal,
   });
 
@@ -43,16 +61,13 @@ export const requestRecommendation: RecommendationRequester = async (question, {
   if (!contentType.includes("text/event-stream")) {
     const payload: unknown = await response.json().catch(() => null);
     if (!response.ok) {
-      throw new RecommendationError(
-        detailOf(payload) ?? `추천 요청에 실패했습니다. (${response.status})`,
-        response.status,
-      );
+      throw new RecommendationError("requestFailed", detailOf(payload) ?? null, response.status);
     }
-    if (!isRecommendation(payload)) throw new RecommendationError("추천 응답 형식이 올바르지 않습니다.");
+    if (!isRecommendation(payload)) throw new RecommendationError("invalidPayload");
     return payload;
   }
 
-  if (!response.body) throw new RecommendationError("추천 응답 본문이 비어 있습니다.");
+  if (!response.body) throw new RecommendationError("emptyBody");
 
   try {
     for await (const message of readSseMessages(response.body)) {
@@ -65,12 +80,13 @@ export const requestRecommendation: RecommendationRequester = async (question, {
         case "result": {
           const payload = parseJson(message.data);
           const result = isRecord(payload) ? payload.result : undefined;
-          if (!isRecommendation(result)) throw new RecommendationError("추천 응답 형식이 올바르지 않습니다.");
+          if (!isRecommendation(result)) throw new RecommendationError("invalidPayload");
           return result;
         }
         case "error":
           throw new RecommendationError(
-            detailOf(parseJson(message.data)) ?? "추천 처리 중 오류가 발생했습니다.",
+            "pipelineFailed",
+            detailOf(parseJson(message.data)) ?? null,
           );
         default:
           break; // 알 수 없는 이벤트는 무시한다
@@ -79,9 +95,9 @@ export const requestRecommendation: RecommendationRequester = async (question, {
   } catch (error) {
     // 스트림이 중간에 끊기면 본문 읽기가 네트워크 오류로 실패한다. 취소(AbortError)는 호출자가 구분하므로 그대로 둔다.
     if (error instanceof RecommendationError || signal?.aborted) throw error;
-    throw new RecommendationError(STREAM_INTERRUPTED);
+    throw new RecommendationError("streamInterrupted");
   }
-  throw new RecommendationError(STREAM_INTERRUPTED);
+  throw new RecommendationError("streamInterrupted");
 };
 
 function parseJson(text: string): unknown {
