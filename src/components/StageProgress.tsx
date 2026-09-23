@@ -1,8 +1,12 @@
+"use client";
+
+import { useLocale } from "@/components/LocaleProvider";
 import styles from "@/components/RecommendScreen.module.css";
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
 import { Spinner } from "@/components/ui/Spinner";
 import { cx } from "@/lib/cx";
+import { stageDetail, stageLabel } from "@/lib/i18n";
 import {
   AGENT_STAGE,
   AGENT_TOOL_STAGES,
@@ -15,13 +19,6 @@ type NodeStatus = StageStatus | "pending";
 
 type Branch = { name: string; detail: string | null; status: NodeStatus; calls?: number };
 type Step = { branches: Branch[]; status: NodeStatus };
-
-const STATUS_LABELS: Record<NodeStatus, string> = {
-  pending: "대기",
-  started: "진행 중",
-  completed: "완료",
-  failed: "실패",
-};
 
 const TOOL_NAMES = new Set(AGENT_TOOL_STAGES);
 
@@ -60,21 +57,22 @@ function linkStatus(from: NodeStatus, to: NodeStatus): NodeStatus {
 }
 
 function BranchText({ name, detail, status, calls = 0 }: Branch) {
+  const { locale, t } = useLocale();
   return (
     <>
       {/* 배지를 이름과 같은 흐름에 두어야 좁은 도구 칸에서 이름 옆에 붙었다가 자연스레 줄을 넘긴다 */}
       <span>
-        {name}
+        {stageLabel(name, locale)}
         {calls > 1 && (
           <Badge className={styles.toolCalls} aria-hidden="true">
             ×{calls}
           </Badge>
         )}
       </span>
-      {detail && <span className={styles.stageDetail}>{detail}</span>}
+      {detail && <span className={styles.stageDetail}>{stageDetail(detail, locale)}</span>}
       <span className="visually-hidden">
-        {calls > 1 && `${calls}회 호출, `}
-        {STATUS_LABELS[status]}
+        {calls > 1 && t.progress.toolCallCount(calls)}
+        {t.progress.status[status]}
       </span>
     </>
   );
@@ -85,8 +83,11 @@ function BranchText({ name, detail, status, calls = 0 }: Branch) {
  * 지금 도는 칸만 연두로 밝힌다. 에이전트 추론 칸 밑으로는 창살을 내려 고를 수 있는 도구 다섯 개를
  * 매달고, 실제로 고른 것만 밝히며 지금 도는 도구는 깜빡인다. 끝까지 옅게 남은 도구는 이번 질문에
  * 고르지 않았다는 뜻이다. 이벤트가 하나도 없으면(JSON으로 응답하는 백엔드) 안내 문구만 보인다.
+ *
+ * 단계 이름은 백엔드가 보내는 한국어 문자열이 곧 키라서 그대로 맞춰 보고, 화면에 적을 때만 옮긴다.
  */
 export function StageProgress({ events }: { events: StageEvent[] }) {
+  const { locale, t } = useLocale();
   const latest = new Map<string, StageEvent>();
   for (const event of events) latest.set(event.stage, event);
 
@@ -113,13 +114,13 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
   // 러너가 대신 부른 몫(가격·사양 안전망, 리뷰 요약 후처리)이 빠지므로, 화면 숫자가 도중에 거꾸로
   // 줄고 배지 합과도 어긋난다. 창살에 매단 도구가 실제로 몇 번 돌았는지를 배지와 같은 출처로 센다.
   const totalCalls = [...calls.values()].reduce((sum, count) => sum + count, 0);
-  const agentDetail = totalCalls > 0 ? `도구 호출 ${totalCalls}회` : null;
+  const agentDetail = totalCalls > 0 ? t.progress.toolCallTotal(totalCalls) : null;
 
   return (
     <Panel as="section" aria-live="polite" aria-busy="true">
       <p className={styles.progressTitle}>
         <Spinner />
-        추천을 준비하고 있어요. 보통 10~20초 걸려요.
+        {t.progress.title}
       </p>
       {events.length > 0 && (
         <div className={styles.pipelineScroll}>
@@ -139,7 +140,7 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
                     // 창살은 이름에만 기준을 건다. detail이 붙어 칸이 넓어져도 가운데가 밀리지 않는다
                     <div className={styles.stage} data-status={step.branches[0].status}>
                       <div className={styles.agentName}>
-                        {step.branches[0].name}
+                        {stageLabel(step.branches[0].name, locale)}
                         <ul className={styles.tools}>
                           {tools.map((tool) => (
                             <li
@@ -153,7 +154,9 @@ export function StageProgress({ events }: { events: StageEvent[] }) {
                         </ul>
                       </div>
                       {agentDetail && <span className={styles.stageDetail}>{agentDetail}</span>}
-                      <span className="visually-hidden">{STATUS_LABELS[step.branches[0].status]}</span>
+                      <span className="visually-hidden">
+                        {t.progress.status[step.branches[0].status]}
+                      </span>
                     </div>
                   ) : step.branches.length === 1 ? (
                     <span className={styles.stage} data-status={step.branches[0].status}>

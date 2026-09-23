@@ -1,5 +1,10 @@
+import { LocaleProvider } from "@/components/LocaleProvider";
 import { RecommendScreen } from "@/components/RecommendScreen";
 
 export default function Home() {
-  return <RecommendScreen />;
+  return (
+    <LocaleProvider>
+      <RecommendScreen />
+    </LocaleProvider>
+  );
 }

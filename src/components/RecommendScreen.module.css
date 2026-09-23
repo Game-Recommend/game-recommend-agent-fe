@@ -46,6 +46,17 @@
   flex-direction: column;
   gap: var(--space-3);
 }
+/* 브랜드와 언어 토글을 한 줄에 마주 놓는다 */
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.localeToggle {
+  display: flex;
+  gap: var(--space-1);
+}
 .brand {
   margin: 0;
   display: flex;
