@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { Panel } from "@/components/ui/Panel";
 import { TextArea } from "@/components/ui/TextArea";
-import { EXAMPLE_QUESTIONS, type Strings } from "@/lib/i18n";
+import { EXAMPLE_QUESTIONS, type ExampleQuestion, type Strings } from "@/lib/i18n";
 import {
   RecommendationError,
   requestRecommendation,
@@ -31,6 +31,14 @@ type Phase =
   | { status: "done"; result: RecommendationResponse }
   /** 문장이 아니라 오류를 그대로 들고 있어야 언어를 바꿨을 때 문구도 따라 바뀐다. */
   | { status: "error"; error: unknown };
+
+/**
+ * 입력창의 내용. 칩으로 넣은 예시는 문장이 아니라 어떤 예시인지를 들고 있어야 언어를 바꿨을 때 입력창도
+ * 따라 바뀐다. 한 글자라도 고치면 그때부터는 사용자가 쓴 글이라 언어를 바꿔도 그대로 둔다.
+ */
+type Draft =
+  | { source: "typed"; text: string }
+  | { source: "example"; example: ExampleQuestion };
 
 /** `?mock=1`로 열면 백엔드 대신 예시 응답을 씁니다. 화면 작업과 데모용입니다. */
 async function pickRequester(): Promise<RecommendationRequester> {
@@ -50,11 +58,15 @@ function errorText(error: unknown, t: Strings): string {
 
 export function RecommendScreen() {
   const { locale, t } = useLocale();
-  const [question, setQuestion] = useState("");
+  const [draft, setDraft] = useState<Draft>({ source: "typed", text: "" });
   const [phase, setPhase] = useState<Phase>({ status: "idle" });
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // 예시는 입력창에 보고 있는 언어로 보여 주되, 다시 보낼 때도 파이프라인에는 한국어 문장을 보낸다.
+  const question = draft.source === "example" ? draft.example.question[locale] : draft.text;
+  const questionToSend = draft.source === "example" ? draft.example.question.ko : draft.text;
 
   const submit = useCallback(
     async (text: string) => {
@@ -106,14 +118,14 @@ export function RecommendScreen() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    void submit(question);
+    void submit(questionToSend);
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter는 전송, Shift+Enter는 줄바꿈. 한글 조합 중의 Enter는 조합 확정이므로 무시한다.
     if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
-      void submit(question);
+      void submit(questionToSend);
     }
   };
 
@@ -142,7 +154,7 @@ export function RecommendScreen() {
               id="question"
               className={styles.input}
               value={question}
-              onChange={(event) => setQuestion(event.target.value)}
+              onChange={(event) => setDraft({ source: "typed", text: event.target.value })}
               onKeyDown={onKeyDown}
               maxLength={MAX_QUESTION_LENGTH}
               rows={2}
@@ -167,8 +179,7 @@ export function RecommendScreen() {
                   title={example.question[locale]}
                   disabled={loading}
                   onClick={() => {
-                    // 입력창에는 보고 있는 언어로 넣고, 파이프라인에는 한국어 문장을 보낸다.
-                    setQuestion(example.question[locale]);
+                    setDraft({ source: "example", example });
                     void submit(example.question.ko);
                   }}
                 >
