@@ -90,10 +90,10 @@ docs/DESIGN_SYSTEM.md      디자인 시스템 사용 규칙
 | 왼쪽 게임 목록 | `games[]`. 선택 버튼은 `media.logo_url`과 게임 이름. 누르면 펼쳐지는 상세 패널에 `game.genres`·`themes`·`playtime_hours`, `price.quote.amount_krw`, `hardware.requirement`(최소)·`hardware.recommended`(권장), `review.summary`, 출처 링크(IGDB·스토어·리뷰) | 로고가 없거나 불러오지 못하면 이름 텍스트, 리뷰 없음·가격 없음·최소 사양 없음은 각각 안내 문구, 권장 사양·출처 링크는 없으면 숨김. `games`가 비면 목록·트레일러 대신 안내 문구 |
 | 전체 화면 흐린 배경 | 선택한 게임의 `media.hero_url`. `hero_width`·`hero_height`는 이미지의 고유 크기로 넘겨 로드 전에도 비율을 확정 | 단색 배경 |
 | 오른쪽 트레일러 | `media.trailer_youtube_id` → `youtube.com/embed/{id}?autoplay=1&mute=1&playsinline=1` | 빈 영역과 안내 문구 |
-| 보조 정보 | `warnings`는 요약 아래 목록 | 항목이 없으면 숨김 |
 
-`excluded_games`(가격·사양 검사에서 제외한 후보)는 응답에 그대로 들어 있지만 지금 화면에는 그리지 않습니다.
-응답 형식을 검사할 때만 확인합니다.
+`excluded_games`(가격·사양 검사에서 제외한 후보)와 `warnings`(조회 실패·정보 누락 등의 안내)는 응답에 그대로
+들어 있지만 지금 화면에는 그리지 않습니다. 응답 형식을 검사할 때만 확인합니다. `warnings`에 담기는 리뷰 요약·가격
+누락은 펼친 카드의 안내 문구가, 충족 후보 없음은 빈 목록 안내가 이미 보여 줍니다.
 
 화면 전체를 한 화면 높이(`100dvh`)에 담습니다. 트레일러가 남는 세로 높이를 16:9로 꽉 채우는 너비(결과 영역의
 70% 상한)를 먼저 갖고, 목록은 나머지(42% 상한)를 받아 그 안에서만 스크롤합니다. 두 칸이 모두 상한에 걸려 가로가
