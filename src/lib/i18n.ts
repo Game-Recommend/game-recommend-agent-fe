@@ -1,7 +1,7 @@
 /**
  * 화면에 보이는 고정 문구. 한국어와 영어를 한 곳에 나란히 두어 한쪽만 고치는 일이 없게 한다.
  *
- * 백엔드가 만드는 문장(answer·리뷰 요약·warnings·판정 이유)은 여기 없다. 그건 백엔드가
+ * 백엔드가 만드는 문장(answer·리뷰 요약·판정 이유)은 여기 없다. 그건 백엔드가
  * 요청의 출력 언어를 받도록 고쳐야 바뀌므로, 그전까지 영어 화면에서도 한국어로 나온다.
  */
 
@@ -48,7 +48,6 @@ const ko = {
   results: {
     sectionLabel: "추천 결과",
     answerLabel: "추천 요약",
-    warningsLabel: "안내",
     empty: "조건을 모두 충족하는 게임을 찾지 못했어요. 조건을 조금 바꿔서 다시 물어보세요.",
   },
   card: {
@@ -104,7 +103,6 @@ const en: Strings = {
   results: {
     sectionLabel: "Recommendations",
     answerLabel: "Summary",
-    warningsLabel: "Notes",
     empty: "No game met every condition. Try loosening one of them and asking again.",
   },
   card: {

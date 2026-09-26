@@ -100,10 +100,12 @@ stages, so they can be `null` at any time; the right-hand column says what is sh
 | Left game list | `games[]`. The select button uses `media.logo_url` and the game name. Pressing it expands a detail panel with `game.genres`/`themes`/`playtime_hours`, `price.quote.amount_krw`, `hardware.requirement` (minimum) and `hardware.recommended`, `review.summary`, and source links (IGDB, store, reviews) | If the logo is missing or fails to load, the name as text; missing review, price or minimum specs each get a notice; recommended specs and source links are hidden when absent. If `games` is empty, a notice replaces the list and trailer |
 | Blurred full-screen background | The selected game's `media.hero_url`. `hero_width`/`hero_height` are passed as the image's intrinsic size so the aspect ratio is fixed before loading | Solid background |
 | Right-hand trailer | `media.trailer_youtube_id` → `youtube.com/embed/{id}?autoplay=1&mute=1&playsinline=1` | Empty area with a notice |
-| Supplementary info | `warnings` as a list below the summary | Hidden when there are no items |
 
-`excluded_games` (candidates dropped by the price and spec checks) is present in the response but is not
-rendered on the current screen. It is only inspected when checking the response shape.
+`excluded_games` (candidates dropped by the price and spec checks) and `warnings` (notices such as lookup
+failures or missing information) are present in the response but are not rendered on the current screen.
+They are only inspected when checking the response shape. A missing review summary or price reported in
+`warnings` is already shown by the notice in the expanded card, and no passing candidate by the empty-list
+notice.
 
 The whole screen fits in one viewport height (`100dvh`). The trailer first takes the width that fills the
 remaining vertical space at 16:9 (capped at 70% of the result area), and the list takes what is left

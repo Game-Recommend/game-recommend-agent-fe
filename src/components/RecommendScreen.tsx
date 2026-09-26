@@ -206,16 +206,6 @@ export function RecommendScreen() {
               </p>
             </Panel>
 
-            {result.warnings.length > 0 && (
-              <Panel tone="warning" padding="sm">
-                <ul className={styles.warnings} aria-label={t.results.warningsLabel}>
-                  {result.warnings.map((warning, index) => (
-                    <li key={`${index}-${warning}`}>{warning}</li>
-                  ))}
-                </ul>
-              </Panel>
-            )}
-
             {result.games.length > 0 ? (
               <div className={styles.columns}>
                 <div className={styles.listWrap}>

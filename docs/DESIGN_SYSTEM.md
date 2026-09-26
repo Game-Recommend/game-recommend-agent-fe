@@ -108,7 +108,7 @@ docs/DESIGN_SYSTEM.md          이 문서
 | `--text-subtitle` | 600 · 16px / 1.4 | 소제목 |
 | `--text-body-lg` | 400 · 16~18px / 1.8 | 문서 머리말 |
 | `--text-body` | 400 · 16px / 1.6 | 기본 본문, 입력, 추천 요약문 |
-| `--text-body-sm` | 400 · 14px / 1.6 | 카드 정보, 진행 단계 이름, 안내 목록, 트레일러 빈 영역 |
+| `--text-body-sm` | 400 · 14px / 1.6 | 카드 정보, 진행 단계 이름, 트레일러 빈 영역 |
 | `--text-label` / `--text-label-sm` | 700 · 15px / 13px | 버튼 |
 | `--text-caption` | 400 · 13px / 1.5 | 메타, 칩, 진행 표시의 도구 이름·부가 설명 |
 | `--text-overline` | 700 · 13px + 자간 0.16em | 브랜드 표기 |
@@ -146,7 +146,7 @@ docs/DESIGN_SYSTEM.md          이 문서
 | `Button` | `variant`: primary·secondary·ghost, `size`: md·sm | 기본 `type="button"`. 전송 버튼만 `type="submit"` |
 | `Chip` | button 속성 | 예시 질문·필터처럼 나란히 두는 작은 버튼 |
 | `Badge` | `tone`: success·danger·warning·neutral | 색만으로 뜻을 전하지 않도록 글자를 함께 씁니다. 판정 배지 외에 진행 표시의 `×N` 호출 횟수에도 씁니다 |
-| `Panel` | `as`, `tone`: default·danger·warning, `padding`: none·sm·md·lg, `interactive`, `selected` | `as`로 section·article·p·details 등 뜻에 맞는 요소를 고릅니다. `interactive`·`selected`는 지금 추천 화면에서는 쓰지 않고 `/design-system` 견본에만 있습니다 |
+| `Panel` | `as`, `tone`: default·danger·warning, `padding`: none·sm·md·lg, `interactive`, `selected` | `as`로 section·article·p·details 등 뜻에 맞는 요소를 고릅니다. `tone="warning"`·`interactive`·`selected`는 지금 추천 화면에서는 쓰지 않고 `/design-system` 견본에만 있습니다 |
 | `TextArea` | textarea 속성 | 오류는 `aria-invalid="true"`, 라벨은 부르는 쪽에서 연결 |
 | `Spinner` | `size`: sm·md | 장식용이라 스크린 리더에 숨깁니다. 옆에 글자를 두세요 |
 | `BrandMark` | `className` | 브랜드 마크. 크기는 `em`이라 옆 글자를 따라갑니다. `GAME RECOMMEND` 표기 왼쪽에 두고, 같은 모양을 `src/app/icon.svg`가 탭 아이콘으로 씁니다 |
