@@ -62,7 +62,8 @@ src/lib/
 ├─ sse.ts                     fetch 응답 본문의 SSE 해석기
 ├─ mock-recommendation.ts     ?mock=1용 예시 응답
 └─ cx.ts                      조건부 className 합치기
-next.config.ts      Next.js 설정
+src/instrumentation-client.ts  BotID 초기화 (/api/recommend 요청에 봇 확인 결과를 붙인다)
+next.config.ts      Next.js 설정 (BotID 확인 스크립트 중계 포함)
 tsconfig.json       TypeScript 설정
 eslint.config.mjs   ESLint 설정
 .env.example        환경 변수 예시
@@ -130,6 +131,36 @@ docs/DESIGN_SYSTEM.md      디자인 시스템 사용 규칙
 맞춰 관리합니다.
 `API_KEY`가 비어 있거나 외부 API·LLM 키가 설정되지 않은 백엔드는 추천 요청에 503을 반환합니다.
 
+### 봇 차단 (BotID)
+
+`POST /api/recommend`는 [Vercel BotID](https://vercel.com/docs/botid)의 Basic 단계(모든 요금제 무료)로 막습니다.
+추천 한 건이 백엔드에서 OpenAI를 여러 번 부르므로, 브라우저가 아닌 호출(curl·스크립트)이 그 비용을 쓰지 못하게 하는
+장치입니다. `BACKEND_API_KEY`는 백엔드 주소로 직접 오는 호출만 막고, 이 프록시로 오는 호출에는 누구 것이든 붙기 때문입니다.
+
+- 브라우저: `src/instrumentation-client.ts`의 `initBotId()`가 화면에 보이지 않는 확인을 풀고, `/api/recommend`로 가는
+  POST에 그 결과를 헤더로 붙입니다. 확인 스크립트는 `next.config.ts`의 `withBotId()`가 이 앱 주소로 중계합니다.
+- 서버: Route Handler가 본문을 읽고 질문을 검사하기 전에 `checkBotId()`를 부릅니다. 봇으로 판정하면 백엔드를 부르지 않고
+  403을 돌려줍니다. 확인 헤더가 없거나 맞지 않는 요청이 봇입니다.
+- 판정 자체가 실패하면(Vercel 밖에서 `npm start`, Vercel API 오류, 프로젝트의 OIDC 설정이 꺼져 함수에 토큰이 없음) 막지 않고
+  통과시키며 서버 로그에 `BotID 판정에 실패해 요청을 통과시킵니다`를 남깁니다. 확인 장치가 고장 난 동안 추천 전체가 멈추지
+  않게 한 선택이라, 배포 로그에 이 줄이 계속 찍히면 보호가 꺼져 있다는 뜻입니다.
+- `npm run dev`에서는 항상 사람으로 판정합니다. 그래서 아래 curl 예시는 로컬에서 그대로 동작하고, 배포된 주소로 보내면 403입니다.
+- 실제 브라우저를 자동 조작하는 봇(Playwright 등)까지 잡는 Deep Analysis는 Pro 요금제의 유료 기능(`checkBotId()` 1,000회당
+  $1)이라 켜지 않았습니다.
+
+배포 후에는 아래 두 요청으로 확인합니다. 둘 다 질문이 비어 있어 백엔드를 부르지 않으므로 비용이 들지 않습니다.
+
+1. 터미널에서 curl로 `{"question": ""}`를 보내면 403이어야 합니다(봇으로 판정).
+2. 배포된 화면의 개발자 도구 콘솔에서 아래를 실행하면 400이어야 합니다(봇 판정을 통과하고 질문 검사에서 걸림).
+
+```js
+fetch("/api/recommend", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ question: "" }),
+}).then((response) => response.status);
+```
+
 ### SSE 진행 스트림
 
 화면은 `Accept: text/event-stream`으로 `POST /api/recommend`를 호출합니다. 프록시는 같은 헤더로 백엔드를 부르고,
@@ -182,6 +213,8 @@ JSON 경로로 처리합니다. 따라서 SSE가 없는 백엔드와도 그대�
 브라우저가 취소 버튼을 누르거나 페이지를 떠나면 프록시가 백엔드 호출을 끊고, 백엔드는 진행 중인 파이프라인을 취소합니다.
 스트림이 `result`·`error` 없이 끊기면 화면에 "연결이 끊겼습니다" 안내가 나옵니다.
 
+아래 curl은 `npm run dev`에서만 통과합니다. 배포된 주소에서는 BotID가 403으로 막습니다.
+
 ```bash
 # JSON
 curl -X POST http://localhost:3000/api/recommend \
@@ -201,6 +234,7 @@ curl -N -X POST http://localhost:3000/api/recommend \
 | 상태 | 원인 |
 | --- | --- |
 | 400 | 본문이 JSON이 아니거나 `question`이 규칙에 맞지 않음 |
+| 403 | BotID가 브라우저가 아닌 요청으로 판정 (배포 환경. `npm run dev`에서는 나오지 않음) |
 | 500 | `BACKEND_API_URL` 미설정 |
 | 502 | 백엔드 연결 실패, 키 불일치(백엔드가 401·403 응답), JSON도 SSE도 아닌 응답 |
 | 504 | 백엔드 응답 시간 초과 (55초. SSE는 스트림이 열릴 때까지, JSON은 본문까지) |
@@ -231,3 +265,7 @@ SSE 응답은 스트림이 끝날 때까지 함수가 살아 있어야 하므로
 배포되어 있으므로 `BACKEND_API_URL`에 그 주소를 넣습니다. `BACKEND_API_KEY`가 Preview 환경에 없으면 프리뷰 배포의
 추천 요청은 502(백엔드 인증 설정)로 실패하므로, 프리뷰에서도 확인하려면 Preview 환경에 같은 키를 등록합니다.
 GitHub Actions의 CI 통과를 머지 조건으로 사용하려면 저장소의 브랜치 규칙을 설정합니다.
+
+BotID Basic은 대시보드 설정 없이 Vercel 배포에서 바로 동작합니다. 다만 `checkBotId()`는 함수에 주어지는 Vercel OIDC 토큰으로
+판정 API를 부르므로 프로젝트 설정에서 OIDC가 켜져 있어야 합니다. 판정 결과는 프로젝트 Firewall 탭의 트래픽 필터에서
+BotID를 골라 볼 수 있습니다.

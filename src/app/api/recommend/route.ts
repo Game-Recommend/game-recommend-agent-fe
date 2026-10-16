@@ -1,3 +1,5 @@
+import { checkBotId } from "botid/server";
+
 import { errorResponse, proxyMessages, proxyToBackend } from "@/lib/backend";
 import { DEFAULT_LOCALE, isLocale, LOCALES } from "@/lib/i18n";
 
@@ -19,6 +21,7 @@ const SSE_MEDIA_TYPE = "text/event-stream";
  * 쓰고 백엔드로도 넘기지만, 백엔드가 아직 이 값을 읽지 않으면 무시되고 한국어 답변이 돌아옵니다.
  * `Accept: text/event-stream`이면 백엔드의 SSE 진행 이벤트(`stage` … `result` 또는 `error`)를 그대로 흘려보내고,
  * 그 외에는 JSON 응답을 돌려줍니다.
+ * BotID가 브라우저가 아닌 요청(curl·스크립트)으로 판정하면 백엔드를 부르지 않고 403을 돌려줍니다.
  */
 export async function POST(request: Request) {
   let payload: unknown;
@@ -39,6 +42,11 @@ export async function POST(request: Request) {
   const locale = language ?? DEFAULT_LOCALE;
   const messages = proxyMessages(locale);
 
+  // 차단 문장을 요청한 언어로 고르려고 본문을 먼저 읽는다. 질문 검사보다 앞이라 봇은 400 대신 403을 받는다.
+  if (await isBot()) {
+    return errorResponse(403, messages.botDetected);
+  }
+
   const { question } = body;
   if (typeof question !== "string" || question.trim() === "") {
     return errorResponse(400, messages.invalidQuestion);
@@ -55,4 +63,19 @@ export async function POST(request: Request) {
     signal: request.signal,
     locale,
   });
+}
+
+/**
+ * BotID 판정. 브라우저는 `src/instrumentation-client.ts`가 붙인 확인 헤더를 보내고, 헤더가 없거나 틀리면 봇입니다.
+ * `next dev`에서는 항상 사람으로 판정합니다. 판정 자체가 실패하면(Vercel 밖에서 `npm start`, Vercel API 오류)
+ * 막지 않고 기록만 남깁니다. 막으면 확인 장치가 고장 난 동안 모든 추천이 실패합니다.
+ */
+async function isBot(): Promise<boolean> {
+  try {
+    const verification = await checkBotId();
+    return verification.isBot;
+  } catch (error) {
+    console.error("BotID 판정에 실패해 요청을 통과시킵니다:", error);
+    return false;
+  }
 }
