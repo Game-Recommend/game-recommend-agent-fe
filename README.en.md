@@ -70,7 +70,8 @@ src/lib/
 ├─ sse.ts                     SSE parser for a fetch response body
 ├─ mock-recommendation.ts     Example response for ?mock=1
 └─ cx.ts                      Conditional className joining
-next.config.ts      Next.js configuration
+src/instrumentation-client.ts  BotID setup (attaches the bot-check result to /api/recommend requests)
+next.config.ts      Next.js configuration (including the BotID check-script relay)
 tsconfig.json       TypeScript configuration
 eslint.config.mjs   ESLint configuration
 .env.example        Example environment variables
@@ -149,6 +150,44 @@ the backend's `app/schemas/*.py` and `app/pipeline/query_processing/conditions.p
 A backend whose `API_KEY` is empty, or whose external API and LLM keys are unset, returns 503 to
 recommendation requests.
 
+### Bot blocking (BotID)
+
+`POST /api/recommend` is guarded by the Basic level of [Vercel BotID](https://vercel.com/docs/botid) (free
+on every plan). One recommendation makes several OpenAI calls in the backend, so this keeps non-browser
+callers (curl, scripts) from spending that money. `BACKEND_API_KEY` only stops calls made straight to the
+backend address; the proxy attaches it to every call that reaches it, whoever made it.
+
+- Browser: `initBotId()` in `src/instrumentation-client.ts` solves an invisible check and attaches the
+  result as headers to POSTs bound for `/api/recommend`. `withBotId()` in `next.config.ts` relays the
+  check script through this app's own address.
+- Server: the Route Handler calls `checkBotId()` after reading the body and before checking the question.
+  When it judges the request a bot, it returns 403 without calling the backend. A request whose check
+  headers are missing or wrong is a bot.
+- If the check itself fails (`npm start` outside Vercel, a Vercel API error, or the project's OIDC setting
+  turned off so the function gets no token), the request is let through and the server logs
+  `BotID 판정에 실패해 요청을 통과시킵니다` ("the BotID check failed, letting the request through"). This
+  keeps recommendations working while the check is broken, so if that line keeps showing up in the
+  deployment logs, the protection is off.
+- `npm run dev` always judges requests human. That is why the curl examples below work locally; sent to a
+  deployed address, they get a 403.
+- Deep Analysis, which also catches bots driving a real browser (Playwright and the like), is a paid Pro
+  feature ($1 per 1,000 `checkBotId()` calls) and is not enabled.
+
+After deploying, check with the two requests below. Both send an empty question, so neither calls the
+backend and neither costs anything.
+
+1. Sending `{"question": ""}` with curl from a terminal should return 403 (judged a bot).
+2. Running the following in the devtools console on the deployed page should return 400 (passed the bot
+   check, then stopped by the question check).
+
+```js
+fetch("/api/recommend", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ question: "" }),
+}).then((response) => response.status);
+```
+
 ### SSE progress stream
 
 The screen calls `POST /api/recommend` with `Accept: text/event-stream`. The proxy calls the backend with
@@ -214,6 +253,8 @@ cancels the in-flight pipeline.
 If the stream ends without a `result` or `error`, the screen shows a "연결이 끊겼습니다"
 ("the connection was lost") notice.
 
+The curl commands below only pass under `npm run dev`; on a deployed address BotID blocks them with a 403.
+
 ```bash
 # JSON
 curl -X POST http://localhost:3000/api/recommend \
@@ -233,6 +274,7 @@ Errors produced by the proxy itself use the same `{"detail": "..."}` shape as Fa
 | Status | Cause |
 | --- | --- |
 | 400 | The body is not JSON, or `question` does not satisfy the rules |
+| 403 | BotID judged the request not to come from a browser (deployments only; never under `npm run dev`) |
 | 500 | `BACKEND_API_URL` is unset |
 | 502 | Backend connection failure, key mismatch (backend responded 401 or 403), or a response that is neither JSON nor SSE |
 | 504 | Backend response timeout (55 s — until the stream opens for SSE, until the full body for JSON) |
@@ -265,3 +307,7 @@ Vercel project `game-recommend-agent-be`, so put that address in `BACKEND_API_UR
 is missing from the Preview environment, recommendation requests on preview deployments fail with a 502
 (backend authentication configuration) — register the same key for Preview to exercise it there.
 To require GitHub Actions CI to pass before merging, configure the repository's branch rules.
+
+BotID Basic works on Vercel deployments with no dashboard setup. `checkBotId()` does call the check API
+with the Vercel OIDC token handed to the function, though, so OIDC must be enabled in the project
+settings. Verdicts can be viewed by picking BotID in the traffic filter on the project's Firewall tab.
